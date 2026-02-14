@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>S-House PI 체크리스트</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f1f5f9}
+.hide{display:none!important}
+
+/* 로그인 */
+.login{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#3b82f6);display:flex;justify-content:center;align-items:center}
+.login-box{background:#fff;padding:40px;border-radius:16px;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h1{text-align:center;color:#1e3a5f;margin-bottom:8px;font-size:1.5rem}
+.login-box p{text-align:center;color:#64748b;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-weight:600;color:#374151;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;font-size:1rem}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-blue{background:#3b82f6;color:#fff}.btn-blue:hover{background:#2563eb}
+.btn-green{background:#22c55e;color:#fff}.btn-green:hover{background:#16a34a}
+.btn-red{background:#ef4444;color:#fff}.btn-red:hover{background:#dc2626}
+.btn-gray{background:#e5e7eb;color:#374151}.btn-gray:hover{background:#d1d5db}
+.login-info{background:#eff6ff;padding:12px;border-radius:8px;margin-top:20px;font-size:.85rem;color:#1e40af;text-align:center}
+.error{color:#ef4444;font-size:.9rem;margin-top:8px;text-align:center}
+
+/* 헤더 */
+.header{background:linear-gradient(135deg,#1e3a5f,#3b82f6);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100}
+.header-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.header h1{font-size:1.2rem}
+.header-btns{display:flex;gap:8px;flex-wrap:wrap}
+.header-btns button{padding:8px 14px;border:none;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,.2);color:#fff}
+.header-btns button:hover{background:rgba(255,255,255,.3)}
+.header-btns button.active{background:#fff;color:#1e3a5f}
+.user-info{display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2)}
+.progress-bar{width:120px;height:6px;background:rgba(255,255,255,.3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:#4ade80;transition:width .3s}
+
+/* 메인 */
+.main{max-width:1000px;margin:0 auto;padding:20px}
+
+/* 홈 카드 */
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.part-card{background:#fff;border-radius:16px;padding:24px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.part-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.part-card h2{font-size:1.3rem;margin-bottom:8px}
+.part-card p{color:#64748b;margin-bottom:16px}
+.part-card .count{font-size:2rem;font-weight:700;color:#3b82f6}
+
+/* 영역 목록 */
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;background:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.area-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:all .2s}
+.area-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.area-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.area-info{flex:1}
+.area-info h3{font-size:1rem;margin-bottom:4px}
+.area-info p{color:#64748b;font-size:.85rem}
+.area-stats{text-align:right}
+.area-stats .score{font-size:1.5rem;font-weight:700}
+.area-stats .count{font-size:.85rem;color:#64748b}
+.area-bar{width:80px;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-top:6px}
+.area-bar-fill{height:100%;border-radius:3px}
+
+/* 체크리스트 */
+.section-header{background:#fff;padding:16px;border-radius:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.item-card{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:4px solid #e5e7eb}
+.item-card.s1{border-left-color:#ef4444}.item-card.s2{border-left-color:#f97316}.item-card.s3{border-left-color:#eab308}.item-card.s4{border-left-color:#84cc16}.item-card.s5{border-left-color:#22c55e}
+.item-header{padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.item-header:hover{background:#f8fafc}
+.item-no{background:#e5e7eb;padding:4px 10px;border-radius:4px;font-weight:600;font-size:.85rem;margin-right:10px}
+.item-title{font-weight:600;flex:1}
+.item-sub{color:#64748b;font-size:.8rem;margin-left:8px}
+.badge{padding:6px 12px;border-radius:20px;font-size:.85rem;font-weight:600}
+.badge.empty{background:#f3f4f6;color:#9ca3af}
+.badge.filled{background:#22c55e;color:#fff}
+.item-body{display:none;padding:16px;background:#f8fafc;border-top:1px solid #e5e7eb}
+.item-card.open .item-body{display:block}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:16px}
+.detail-box{background:#fff;padding:12px;border-radius:8px;border:1px solid #e5e7eb}
+.detail-box h4{font-size:.8rem;color:#64748b;margin-bottom:6px}
+.detail-box p{font-size:.85rem;line-height:1.6;white-space:pre-line}
+.detail-box.crit{background:#fefce8;border-color:#fcd34d}
+.bench-row{display:flex;gap:12px;margin-bottom:16px}
+.bench-box{flex:1;padding:12px;border-radius:8px;text-align:center}
+.bench-box.top{background:#f0fdf4;border:1px solid #22c55e}
+.bench-box.avg{background:#fff7ed;border:1px solid #f97316}
+.bench-label{font-size:.75rem;color:#64748b}
+.bench-value{font-weight:700;font-size:1rem}
+.score-section{background:#fff;padding:16px;border-radius:8px;border:2px solid #e5e7eb}
+.score-section h4{margin-bottom:12px}
+.score-btns{display:flex;gap:8px;margin-bottom:12px}
+.score-btn{width:50px;height:50px;border:2px solid #d1d5db;border-radius:10px;background:#fff;font-size:1.3rem;font-weight:700;cursor:pointer}
+.score-btn:hover{border-color:#3b82f6}
+.score-btn.sel{color:#fff}
+.score-btn.s1.sel{background:#ef4444;border-color:#ef4444}
+.score-btn.s2.sel{background:#f97316;border-color:#f97316}
+.score-btn.s3.sel{background:#eab308;border-color:#eab308}
+.score-btn.s4.sel{background:#84cc16;border-color:#84cc16}
+.score-btn.s5.sel{background:#22c55e;border-color:#22c55e}
+.memo{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px;resize:vertical;min-height:50px}
+
+/* 대시보드 */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:12px;padding:20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stat-value{font-size:2.2rem;font-weight:700}
+.stat-value.blue{color:#3b82f6}.stat-value.green{color:#22c55e}.stat-value.orange{color:#f97316}
+.stat-label{color:#64748b;font-size:.85rem;margin-top:4px}
+.chart-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.chart-title{font-weight:600;margin-bottom:16px}
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-label{width:140px;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-wrap{flex:1;height:20px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:.75rem;font-weight:600;color:#fff;border-radius:4px}
+.bar-count{width:60px;text-align:right;font-size:.85rem;color:#64748b}
+
+/* 관리자 */
+.admin-card{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.admin-card h3{margin-bottom:16px;font-size:1rem}
+.form-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.form-row input{flex:1;min-width:150px;padding:10px;border:1px solid #d1d5db;border-radius:6px}
+.form-row button{padding:10px 20px}
+.eval-list{max-height:300px;overflow-y:auto}
+.eval-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f8fafc;border-radius:8px;margin-bottom:8px}
+.eval-name{font-weight:600}
+.eval-info{color:#64748b;font-size:.85rem}
+
+@media(max-width:768px){
+.header-top{flex-direction:column;align-items:flex-start}
+.main{padding:12px}
+.home-grid{grid-template-columns:1fr}
+.detail-grid{grid-template-columns:1fr}
+.bench-row{flex-direction:column}
+.score-btn{width:44px;height:44px}
+.bar-label{width:100px}
+}
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login" id="loginPage">
+<div class="login-box">
+<h1>🏭 S-House PI 체크리스트</h1>
+<p>Process Improvement 진단 평가</p>
+<div class="form-group"><label>평가자 선택</label><select id="selUser"><option value="">-- 선택 --</option></select></div>
+<div class="form-group"><label>비밀번호</label><input type="password" id="inpPw" placeholder="비밀번호"></div>
+<button class="btn btn-blue" onclick="doLogin()">로그인</button>
+<div class="error hide" id="loginErr"></div>
+<div class="login-info">Part 1: 107개 | Part 2: 115개 | 총 222개 항목<br>관리자 기본 비밀번호: admin123</div>
+</div>
+</div>
+
+<!-- 앱 -->
+<div class="hide" id="app">
+<div class="header">
+<div class="header-top">
+<h1>🏭 S-House PI 체크리스트</h1>
+<div class="header-btns">
+<button id="btnHome" onclick="goHome()">🏠 홈</button>
+<button id="btnDash" onclick="goDash()">📊 현황</button>
+<button id="btnAdmin" onclick="goAdmin()">⚙️ 관리</button>
+<button onclick="logout()">🚪 로그아웃</button>
+</div>
+</div>
+<div class="user-info">
+<span id="userName"></span>
+<span id="progText">0/222</span>
+<div class="progress-bar"><div class="progress-fill" id="progBar"></div></div>
+</div>
+</div>
+<div class="main" id="mainContent"></div>
+</div>
+
+<script>
+const AREAS=[{part:1,code:"MAN",name:"Man (인적요인)",emoji:"👤",color:"#dc2626",count:20},
+{part:1,code:"MAT",name:"Material (자재/원료)",emoji:"📦",color:"#059669",count:22},
+{part:1,code:"MAC",name:"Machine (설비)",emoji:"⚙️",color:"#2563eb",count:20},
+{part:1,code:"MTD",name:"Method (방법/프로세스)",emoji:"📋",color:"#7c3aed",count:17},
+{part:1,code:"HRM",name:"HR (인적자원관리)",emoji:"👥",color:"#0891b2",count:14},
+{part:1,code:"TTR",name:"Tech Transfer (기술이전)",emoji:"🔬",color:"#ea580c",count:14},
+{part:2,code:"CST",name:"Cost (원가관리)",emoji:"💰",color:"#ca8a04",count:20},
+{part:2,code:"FIN",name:"Finance (재무회계)",emoji:"📊",color:"#16a34a",count:16},
+{part:2,code:"SHE",name:"SHE (안전보건환경)",emoji:"🛡️",color:"#dc2626",count:18},
+{part:2,code:"GMP",name:"GMP (제조품질관리)",emoji:"✅",color:"#2563eb",count:21},
+{part:2,code:"CMP",name:"Compliance (규제준수)",emoji:"📜",color:"#c2410c",count:16},
+{part:2,code:"SCM",name:"Supply Chain (공급망)",emoji:"🚚",color:"#0d9488",count:8},
+{part:2,code:"DIG",name:"IT/Digital (디지털전환)",emoji:"💻",color:"#7c3aed",count:8},
+{part:2,code:"ENV",name:"Energy/Env (에너지환경)",emoji:"🌱",color:"#16a34a",count:8}];
+const ITEMS=[{id:"MAN_1",part:1,area:"MAN",no:1,sub:"SOP 준수",title:"SOP 미준수 Deviation",q:"최근 12개월간 SOP 미준수로 인한 Deviation 발생 건수를 집계하라. 동일 SOP에 대한 반복 미준수가 있는가? 미준수 발생 시 Root Cause 분석이 7일 이내 완료되는가?",ref:"ICH Q10 §3.2.1 CAPA System\n21 CFR 211.22 QC Responsibilities\nKGMP §24 제조관리\nEU GMP Ch.1.4(viii) Deviation",crit:"【5점】0건/년\n【4점】1-2건/년\n【3점】3-5건/년\n【2점】6-10건/년\n【1점】11건 이상/년",meas:"QMS에서 Deviation 유형별 조회\n→ \"SOP 미준수\" 태그 건수 집계",top:"0건/년",avg:"3-5건/년"},
+{id:"MAN_2",part:1,area:"MAN",no:2,sub:"SOP 준수",title:"Critical Step 이중확인",q:"Batch Record의 Critical Step(칭량, 투입, 주요 공정 파라미터)에 대해 제2자 확인(Double Check)이 100% 수행되는지 확인하라. 확인자 자격요건(동일 공정 6개월 이상 경력 등)이 SOP에 명시되어 있는가?",ref:"EU GMP Annex 15 §5.25\nPIC/S PE 009-16 §5.43\n21 CFR 211.101(d) Charge-in",crit:"【5점】100% 수행 + 자격요건 문서화\n【4점】100% 수행, 자격요건 미흡\n【3점】95-99% 수행\n【2점】90-94% 수행\n【1점】90% 미만",meas:"Batch Record 샘플링 검토(월 10건)\n→ Critical Step 확인란 기입률",top:"100%",avg:"95%"},
+{id:"MAN_3",part:1,area:"MAN",no:3,sub:"SOP 준수",title:"동시기록(ALCOA) 준수",q:"Batch Record 기록이 작업과 동시에(Contemporaneous) 이루어지는가? 무작위 감사 시 사후기록/선기록 적발 건수는? 기록 시간과 공정 Log 시간 차이가 30분 이내인가?",ref:"FDA Data Integrity Guidance 2018\nMHRA GxP DI Guidance §6.12\nPIC/S PI 041-1 §5.4\nWHO TRS 996 Annex 5",crit:"【5점】사후/선기록 0건, 시간차 <15분\n【4점】0건, 시간차 <30분\n【3점】1-2건/년, 시간차 <30분\n【2점】3-5건/년\n【1점】6건 이상/년",meas:"월 1회 무작위 감사(5 Batch)\n→ MES Log vs 기록시간 비교",top:"0건",avg:"2건/년"},
+{id:"MAN_4",part:1,area:"MAN",no:4,sub:"SOP 준수",title:"기록 정정 절차 준수",q:"기록 오류 정정 시 ①Single line cross-out ②날짜 ③서명 ④정정사유 4가지가 모두 기재되는가? White-out, 덮어쓰기, 수정테이프 사용이 0건인가?",ref:"EU GMP Annex 11 §9\n21 CFR 211.194(a)\nWHO TRS 996 Annex 5 §15.5",crit:"【5점】부적절 정정 0건/년\n【4점】1건/년\n【3점】2-3건/년\n【2점】4-5건/년\n【1점】6건 이상/년",meas:"QA Batch Review 시 정정 건 전수 검토\n→ 부적절 정정 건수 집계",top:"0건",avg:"2건/년"},
+{id:"MAN_5",part:1,area:"MAN",no:5,sub:"숙련도 관리",title:"Skill Matrix 구축률",q:"전 생산/포장 공정에 대한 Skill Matrix가 구축되어 있는가? Level 정의(1-독립불가 ~ 4-교육가능)가 명확하고, 분기 1회 이상 업데이트 되는가?",ref:"ICH Q10 §2.7 Knowledge Mgmt\nISO 22716:2007 §3.3\nEU GMP Ch.2 Personnel",crit:"【5점】100% 구축 + 분기 Update\n【4점】100% 구축 + 반기 Update\n【3점】80-99% 구축\n【2점】60-79% 구축\n【1점】60% 미만",meas:"공정 목록 대비 Skill Matrix 존재 여부\n÷ 전체 공정 수 × 100",top:"100%",avg:"80%"},
+{id:"MAN_6",part:1,area:"MAN",no:6,sub:"숙련도 관리",title:"작업자 자격인증 제도",q:"핵심공정(칭량/조제/타정/코팅/포장) 작업자에 대한 자격인증(Qualification) 제도가 운영되는가? ①이론시험(80점↑) ②실기평가 ③현장관찰 3단계 인증이 있는가? 연 1회 재인증이 수행되는가?",ref:"21 CFR 211.25 Personnel Qual.\nEU GMP Ch.2.10-2.12\nKGMP §9 교육훈련",crit:"【5점】3단계 인증 + 연1회 재인증\n【4점】2단계 인증 + 재인증\n【3점】1단계 인증만\n【2점】OJT만 운영\n【1점】제도 없음",meas:"인증 제도 문서 확인\n+ 인증 기록 샘플링 검토",top:"3단계+재인증",avg:"OJT만"},
+{id:"MAN_7",part:1,area:"MAN",no:7,sub:"숙련도 관리",title:"작업자별 수율 편차",q:"동일 제품, 동일 공정에서 작업자별 수율(Yield) 편차를 측정하는가? 편차가 ±2% 초과 시 원인분석 및 추가교육이 진행되는가?",ref:"ICH Q10 §3.1 Process Monitoring\n21 CFR 211.188(b)(3)\nEU GMP Annex 15 §5.28 CPV",crit:"【5점】편차 ±1.5% 이내, 초과시 조치\n【4점】편차 ±2.0% 이내\n【3점】편차 ±3.0% 이내\n【2점】측정만, 조치 미흡\n【1점】측정 안함",meas:"MES/ERP에서 작업자별 수율 추출\n→ 표준편차 계산",top:"±1.5%",avg:"±3.0%"},
+{id:"MAN_8",part:1,area:"MAN",no:8,sub:"숙련도 관리",title:"Multi-skill 인력 비율",q:"핵심공정에서 2개 이상 공정 수행 가능한 Multi-skilled 인력 비율은? 각 핵심공정별 최소 3인 이상 자격자가 확보되어 있는가?",ref:"ICH Q10 §4 Continual Improvement\nISO 22301:2019 BCP\nLean Multi-skilling",crit:"【5점】≥50% + 공정당 3인↑\n【4점】40-49% + 공정당 2인↑\n【3점】30-39%\n【2점】20-29%\n【1점】20% 미만",meas:"Skill Matrix에서 Level 3↑ 복수공정 보유자\n÷ 전체 작업자 × 100",top:"≥50%",avg:"30%"},
+{id:"MAN_9",part:1,area:"MAN",no:9,sub:"칭량 관리",title:"칭량 오류 발생률",q:"칭량 공정에서 Human Error(원료 오인, 수량 오류, 용기 혼동, Lot 오류) 발생 건수는? Barcode/RFID 검증 시스템이 도입되어 있는가?",ref:"EU GMP Annex 8 Sampling\n21 CFR 211.68 Equipment\nPIC/S PE 009-16 §5.30-5.33",crit:"【5점】0건/년 + 자동검증 100%\n【4점】0건/년 + 자동검증 50%↑\n【3점】1-2건/년\n【2점】3-5건/년\n【1점】6건 이상/년",meas:"Deviation DB에서 \"칭량\" 키워드 검색\n+ Barcode 시스템 적용 범위 확인",top:"0건+자동검증",avg:"2건/년"},
+{id:"MAN_10",part:1,area:"MAN",no:10,sub:"칭량 관리",title:"칭량 이중확인율",q:"칭량 시 ①원료명 ②중량 ③Lot No. ④용기번호에 대해 제2자 확인이 100% 수행되는가? 확인자와 칭량자가 동일인이 아닌가?",ref:"21 CFR 211.101(c) Charge-in\nEU GMP Annex 11 §6\nISPE GAMP 5 App.D4",crit:"【5점】4항목 100% + 서로 다른 2인\n【4점】3항목 100%\n【3점】2항목만 확인\n【2점】1항목만 확인\n【1점】확인 미실시",meas:"Batch Record 샘플링(월 10건)\n→ 칭량 확인란 기입 현황",top:"4항목 100%",avg:"2항목"},
+{id:"MAN_11",part:1,area:"MAN",no:11,sub:"칭량 관리",title:"칭량실 환경 모니터링",q:"칭량실 온습도(18-25℃, 30-65% RH), 차압(≥10Pa)이 24시간 연속 모니터링 되는가? 일탈 시 15분 내 Alert가 발생하고, 30분 내 조치가 이루어지는가?",ref:"EU GMP Annex 1 (2022) §4\nISO 14644-3:2019\nASHRAE HVAC Applications",crit:"【5점】24/7 모니터링 + 15분 Alert\n【4점】24/7 모니터링 + 30분 Alert\n【3점】근무시간 모니터링만\n【2점】수동 측정(일 2회)\n【1점】모니터링 없음",meas:"BMS/EMS 시스템 확인\n+ Alert 이력 검토",top:"24/7+15분",avg:"근무시간만"},
+{id:"MAN_12",part:1,area:"MAN",no:12,sub:"인수인계",title:"교대 인수인계 표준화",q:"교대 시 표준화된 체크리스트(①설비상태 ②진행Batch ③이상징후 ④미결사항 ⑤안전사항)가 운영되고, 양 교대조 서명으로 기록되는가?",ref:"ICH Q10 §1.6 Communication\nISO 9001:2015 §7.4\n교대근무 안전관리지침(고용노동부)",crit:"【5점】5개 항목 + 양측 서명 + 전자기록\n【4점】5개 항목 + 양측 서명\n【3점】3-4개 항목\n【2점】1-2개 항목만\n【1점】체크리스트 없음",meas:"인수인계 기록 샘플링(월 20건)\n→ 항목 기입률 및 서명 확인",top:"5항목+서명",avg:"3항목"},
+{id:"MAN_13",part:1,area:"MAN",no:13,sub:"인수인계",title:"Batch 연속성 관리",q:"교대 시 진행 중 Batch의 ①현재 단계 ②경과 시간 ③Hold Time 잔여 ④주의사항이 명확히 인계되는가? Hold Time 초과 위험 Batch에 대한 특별 관리가 있는가?",ref:"FDA PV Guidance 2011 Stage 2\nICH Q8(R2) §3.2\nEU GMP Annex 15 §5.22 Hold Time",crit:"【5점】4개 항목 + Hold Time 자동 Alert\n【4점】4개 항목 인계\n【3점】2-3개 항목\n【2점】1개 항목만\n【1점】인계 부실",meas:"인수인계 기록 내 Batch 정보 확인\n+ MES Hold Time 모니터링 기능 확인",top:"4항목+Alert",avg:"2항목"},
+{id:"MAN_14",part:1,area:"MAN",no:14,sub:"Human Error",title:"Error 유형 분류 체계",q:"Human Error 발생 시 유형별(①Skill-based Slip ②Lapse ③Rule-based Mistake ④Knowledge-based Mistake) 분류가 이루어지는가? 분기별 Trend 분석이 수행되는가?",ref:"FDA Human Factors Engineering 2016\nJames Reason Error Model\nISPE Human Error Prevention Guide",crit:"【5점】4유형 분류 + 분기 Trend 보고\n【4점】4유형 분류만\n【3점】2-3유형 분류\n【2점】단순 집계만\n【1점】분류 없음",meas:"Deviation DB의 Human Error 건\n→ 유형별 분류 여부 확인",top:"4유형+Trend",avg:"단순집계"},
+{id:"MAN_15",part:1,area:"MAN",no:15,sub:"Human Error",title:"Poka-Yoke 적용률",q:"반복 발생 Human Error에 대해 실수방지장치(Poka-Yoke, Forcing Function, Interlock)가 적용되어 있는가? 고위험 공정(칭량, 투입, 라벨링)에 100% 적용되어 있는가?",ref:"ISPE Baseline Guide Vol.6\nIEC 62366-1:2015\nLean Error Proofing",crit:"【5점】고위험 100% + 중위험 50%↑\n【4점】고위험 100%\n【3점】고위험 70-99%\n【2점】고위험 50-69%\n【1점】고위험 50% 미만",meas:"고위험 공정 목록 작성\n→ Poka-Yoke 적용 현황 매칭",top:"고위험100%",avg:"50%"},
+{id:"MAN_16",part:1,area:"MAN",no:16,sub:"Human Error",title:"Human Error 발생률",q:"월별 Human Error 발생률(건수/1000 작업시간)을 측정하고, 전년 대비 감소 추세인가? 연간 감소 목표(예: 전년 대비 20% 감소)가 설정되어 있는가?",ref:"ICH Q10 §4.1 Management Review\n21 CFR 211.180(e) Annual Review\nISO 9001:2015 §9.1.3",crit:"【5점】<0.5건/1000h + 연 20%↓ 달성\n【4점】<1.0건/1000h\n【3점】1.0-2.0건/1000h\n【2점】2.1-3.0건/1000h\n【1점】>3.0건/1000h",meas:"Human Error 건수 ÷ 총 작업시간\n× 1000",top:"<0.5건",avg:"1.5건"},
+{id:"MAN_17",part:1,area:"MAN",no:17,sub:"교육 훈련",title:"GMP 교육 이수율",q:"전 직원(생산/QA/QC/지원) GMP 기본교육 이수율은? 신입 2주 내 필수교육, 연 1회 재교육이 100% 이행되는가?",ref:"21 CFR 211.25(a) Personnel Qual.\nKGMP §9 교육훈련\nEU GMP Ch.2.8-2.14",crit:"【5점】이수율 100% + 기한 내 100%\n【4점】이수율 100%, 기한 지연 有\n【3점】이수율 95-99%\n【2점】이수율 90-94%\n【1점】이수율 90% 미만",meas:"교육 이수 현황 DB 조회\n→ 이수율 = 이수자/대상자 × 100",top:"100%",avg:"95%"},
+{id:"MAN_18",part:1,area:"MAN",no:18,sub:"교육 훈련",title:"교육 효과성 평가",q:"교육 후 효과성 평가(①필기시험 ②실기평가 ③현장관찰)가 수행되는가? 합격기준(80점↑)이 정의되고, 불합격 시 재교육 후 재평가가 이루어지는가?",ref:"ICH Q10 §2.6 Knowledge Mgmt\nKirkpatrick Model Level 2-3\n21 CFR 211.25(b)",crit:"【5점】3단계 평가 + 합격기준 명확\n【4점】2단계 평가\n【3점】1단계 평가만\n【2점】평가 없이 이수처리\n【1점】교육 기록 미비",meas:"교육 후 평가 기록 샘플링\n→ 평가 방법 및 합격률 확인",top:"3단계 평가",avg:"1단계만"},
+{id:"MAN_19",part:1,area:"MAN",no:19,sub:"교육 훈련",title:"OJT 체계 운영",q:"On-the-Job Training에 대해 ①훈련기간(최소 2주↑) ②훈련항목 체크리스트 ③Trainer 자격요건(해당 공정 1년↑) ④훈련 평가기준이 정의되어 있는가?",ref:"EU GMP Ch.2.11 Practical Training\n21 CFR 211.25\nISO 10015:2019",crit:"【5점】4개 요소 모두 정의\n【4점】3개 요소 정의\n【3점】2개 요소 정의\n【2점】1개 요소만\n【1점】OJT 체계 없음",meas:"OJT SOP 및 기록 양식 검토\n→ 요소별 정의 여부 확인",top:"4개 요소",avg:"2개 요소"},
+{id:"MAN_20",part:1,area:"MAN",no:20,sub:"교육 훈련",title:"일탈/변경 연계 재교육",q:"Deviation, Change Control, CAPA 발생 시 관련자 재교육이 Trigger 되는가? 재교육 미완료 시 해당 공정 작업 불가 조치(System Lock)가 있는가?",ref:"ICH Q10 §3.2.1 CAPA\n21 CFR 211.192\nEU GMP Ch.1.4(xiv)",crit:"【5점】자동 Trigger + System Lock\n【4점】자동 Trigger, Lock 없음\n【3점】수동 Trigger\n【2점】일부만 Trigger\n【1점】연계 없음",meas:"QMS 시스템에서 Deviation→교육 연계\n기능 및 기록 확인",top:"자동+Lock",avg:"수동"},
+{id:"MAT_1",part:1,area:"MAT",no:1,sub:"수율 관리",title:"표준 Yield 설정",q:"전 제품, 전 공정에 대해 표준 Yield가 통계적 근거(Validation 3 Batch 평균±3σ)로 설정되어 있는가? 설정 근거 문서가 있는가?",ref:"ICH Q7 §8.3 Yield\nFDA PV Guidance 2011 Stage 3\nEU GMP Annex 15 §5.28 CPV",crit:"【5점】100% 설정 + 통계적 근거\n【4점】100% 설정, 근거 미흡\n【3점】80-99% 설정\n【2점】60-79% 설정\n【1점】60% 미만",meas:"제품 목록 대비 Yield 설정 문서\n존재 여부 확인",top:"100%+근거",avg:"80%"},
+{id:"MAT_2",part:1,area:"MAT",no:2,sub:"수율 관리",title:"Yield 모니터링 주기",q:"Batch별 Yield가 생산 완료 후 24시간 내 집계되는가? 표준 대비 ±3% 초과 시 자동 Alert가 발생하는가?",ref:"ICH Q10 §3.1 Process Monitoring\n21 CFR 211.188(b)(3)\nEU GMP Ch.5.72",crit:"【5점】실시간 집계 + 자동 Alert\n【4점】24시간 내 + Alert\n【3점】48시간 내 집계\n【2점】주 1회 집계\n【1점】집계 부정기",meas:"MES/ERP Yield 집계 주기 확인\n+ Alert 설정 여부",top:"실시간+Alert",avg:"주1회"},
+{id:"MAT_3",part:1,area:"MAT",no:3,sub:"수율 관리",title:"Yield 이상 조사율",q:"Yield가 Alert Limit(평균±2σ) 또는 Action Limit(평균±3σ)를 벗어난 경우 100% 조사가 수행되는가? 조사 완료까지 평균 소요일은?",ref:"FDA OOS Guidance 2006\nICH Q10 §3.2.1 CAPA\nEU GMP Annex 15 §5.30 OOT",crit:"【5점】100% 조사 + 평균 5일 이내\n【4점】100% 조사 + 10일 이내\n【3점】90-99% 조사\n【2점】80-89% 조사\n【1점】80% 미만 또는 미조사",meas:"Yield 일탈 건수 vs 조사 완료 건수\n+ 평균 소요일 계산",top:"100%+5일",avg:"90%"},
+{id:"MAT_4",part:1,area:"MAT",no:4,sub:"수율 관리",title:"Mass Balance 관리",q:"주요 제품에 대해 Mass Balance(투입량 = 제품+폐기+Sample+Loss)가 관리되는가? 허용오차 ±1.0%, 초과 시 필수 조사가 이루어지는가?",ref:"ICH Q7 §8.30 Mass Balance\n21 CFR 211.103 Yield Calculation\nEU GMP Ch.5.72 Reconciliation",crit:"【5점】허용오차 ±0.5% + 필수조사\n【4점】허용오차 ±1.0% + 조사\n【3점】허용오차 ±2.0%\n【2점】측정만, 조사 미흡\n【1점】측정 안함",meas:"주요 제품(매출 Top 10)\nMass Balance 기록 확인",top:"±0.5%",avg:"±2.0%"},
+{id:"MAT_5",part:1,area:"MAT",no:5,sub:"분말 Loss",title:"정전기 Loss 관리",q:"분말 취급 공정(칭량/분쇄/혼합/정립)에서 정전기로 인한 설비/용기 부착 손실을 정량화하는가? 대전방지 설비/용기가 사용되는가?",ref:"ISPE Baseline Vol.5 Ch.7 OSD\nIEC 61340-4-4:2018\n분체공학 핸드북",crit:"【5점】손실 ≤0.3% + 대전방지 100%\n【4점】손실 ≤0.5%\n【3점】손실 0.6-1.0%\n【2점】측정만, 개선 미흡\n【1점】측정 안함",meas:"정전기 Loss = (투입량-회수량) 중\n정전기 기인분 측정",top:"≤0.3%",avg:"1.0%"},
+{id:"MAT_6",part:1,area:"MAT",no:6,sub:"분말 Loss",title:"Dust Collection Loss",q:"Dust Collector로 포집되는 분말 손실량을 Batch별로 정량화하는가? Filter 효율(HEPA 99.97%↑) 및 교체 주기가 관리되는가?",ref:"ISPE Baseline Vol.5 §7.5\nACGIH Industrial Ventilation\n산안법 제429조",crit:"【5점】손실 ≤0.2% + HEPA 사용\n【4점】손실 ≤0.3%\n【3점】손실 0.4-0.5%\n【2점】측정만\n【1점】측정 안함",meas:"Dust Collector 포집량 기록\n÷ 총 투입량 × 100",top:"≤0.2%",avg:"0.5%"},
+{id:"MAT_7",part:1,area:"MAT",no:7,sub:"분말 Loss",title:"이송/충전 Loss",q:"원료 이송(Vacuum/Gravity/Manual) 및 충전 시 손실량을 이송방식별로 측정하는가? Closed System 적용 비율은?",ref:"ISPE Baseline Vol.5 Ch.6\n21 CFR 211.80\nEU GMP Annex 8",crit:"【5점】손실 ≤0.1% + Closed 80%↑\n【4점】손실 ≤0.2%\n【3점】손실 0.3-0.5%\n【2점】측정만\n【1점】측정 안함",meas:"이송방식별 Loss 측정 기록\n+ Closed System 적용 현황",top:"≤0.1%",avg:"0.5%"},
+{id:"MAT_8",part:1,area:"MAT",no:8,sub:"Coating 관리",title:"Coating Yield",q:"Coating 공정 수율(정제 중량증가분/투입 Coating액)을 측정하는가? Over-spray Loss가 10% 이내인가?",ref:"ISPE Baseline Vol.5 Ch.10\nICH Q8 Design Space\nFDA SUPAC-IR Guidance",crit:"【5점】Yield ≥90% + Over-spray ≤8%\n【4점】Yield ≥85%\n【3점】Yield 80-84%\n【2점】Yield 75-79%\n【1점】Yield <75% 또는 미측정",meas:"Coating 후 정제 중량 증가분\n÷ 투입 Coating액 중량 × 100",top:"≥90%",avg:"80%"},
+{id:"MAT_9",part:1,area:"MAT",no:9,sub:"Coating 관리",title:"Coating 균일도",q:"Coating 후 정제 중량 RSD(상대표준편차)가 3% 이내인가? In-process 샘플링(4시간마다 20정)으로 균일도를 확인하는가?",ref:"USP <905> Uniformity\nICH Q6A §3.3.1\nEU Ph. 2.9.40",crit:"【5점】RSD ≤2% + 4시간마다 확인\n【4점】RSD ≤3%\n【3점】RSD 3.1-4.0%\n【2점】RSD 4.1-5.0%\n【1점】RSD >5% 또는 미측정",meas:"In-process 샘플 20정 칭량\n→ RSD 계산",top:"RSD≤2%",avg:"RSD 4%"},
+{id:"MAT_10",part:1,area:"MAT",no:10,sub:"Coating 관리",title:"Coating 불량률",q:"Coating 불량(Picking/Sticking/Twinning/Orange Peel/Logo Bridging) 발생률이 0.5% 이내인가? 불량 유형별 Pareto 분석이 수행되는가?",ref:"Pharmaceutical Technology\nISPE Troubleshooting Guide\nICH Q9 QRM",crit:"【5점】불량률 ≤0.3% + Pareto 분석\n【4점】불량률 ≤0.5%\n【3점】불량률 0.6-1.0%\n【2점】불량률 1.1-1.5%\n【1점】불량률 >1.5%",meas:"Coating 후 외관검사 불량 수\n÷ 총 정제 수 × 100",top:"≤0.3%",avg:"1.5%"},
+{id:"MAT_11",part:1,area:"MAT",no:11,sub:"재고 관리",title:"FEFO 준수율",q:"First Expired First Out 원칙 준수율이 100%인가? FEFO 위반(유효기간 짧은 재고 미출고) 건수가 0건인가?",ref:"EU GMP Ch.5.66 Storage\n21 CFR 211.87 Retesting\nWHO TRS 996 Annex 5 §11.19",crit:"【5점】준수율 100% + 위반 0건\n【4점】준수율 99%\n【3점】준수율 97-98%\n【2점】준수율 95-96%\n【1점】준수율 <95%",meas:"WMS 출고 기록 vs 유효기간순\n→ FEFO 위반 건수 집계",top:"100%",avg:"97%"},
+{id:"MAT_12",part:1,area:"MAT",no:12,sub:"재고 관리",title:"유효기간 경과 폐기",q:"원료/자재/반제품의 유효기간 경과로 인한 폐기가 0건인가? 30/60/90일 전 3단계 Alert 시스템이 있는가?",ref:"EU GMP Ch.5.66 Re-evaluation\n21 CFR 211.87 Expiration\nKGMP §17 원료관리",crit:"【5점】폐기 0건 + 3단계 Alert\n【4점】폐기 0건\n【3점】폐기 1-2건/년\n【2점】폐기 3-5건/년\n【1점】폐기 6건↑/년",meas:"연간 유효기간 폐기 건수 집계\n+ Alert 시스템 확인",top:"0건+Alert",avg:"2건/년"},
+{id:"MAT_13",part:1,area:"MAT",no:13,sub:"재고 관리",title:"재고 정확도",q:"WMS/ERP 시스템 재고와 실물 재고 일치율이 99.5% 이상인가? 월별 Cycle Count 10% 이상, 연 1회 전수 실사가 수행되는가?",ref:"ISA-95 Inventory Mgmt\nGS1 Healthcare Standards\nK-IFRS 재고자산",crit:"【5점】정확도 ≥99.8% + 월 Cycle 10%\n【4점】정확도 ≥99.5%\n【3점】정확도 98-99.4%\n【2점】정확도 97-97.9%\n【1점】정확도 <97%",meas:"|시스템 재고 - 실물 재고|\n÷ 시스템 재고 × 100",top:"≥99.8%",avg:"98%"},
+{id:"MAT_14",part:1,area:"MAT",no:14,sub:"재고 관리",title:"재고 회전율",q:"원료/자재/완제품별 재고 회전율(연간 출고액/평균 재고액)이 목표 이상인가? Dead Stock(6개월↑ 미출고) 비율이 3% 이내인가?",ref:"K-IFRS 1002 재고자산\nSCOR Inventory Metrics\nLean Inventory Control",crit:"【5점】회전율 ≥8회 + Dead ≤2%\n【4점】회전율 ≥6회 + Dead ≤3%\n【3점】회전율 5회\n【2점】회전율 4회\n【1점】회전율 <4회",meas:"연간 출고액 ÷ 평균 재고액\nDead Stock = 6개월↑ 미출고 재고",top:"≥8회",avg:"5회"},
+{id:"MAT_15",part:1,area:"MAT",no:15,sub:"폐기 관리",title:"폐기 비용 관리",q:"월별 폐기 발생 현황(사유별, 품목별, 금액별)이 분석되고 경영진 보고되는가? 폐기 비용 KPI(매출 대비 %)가 설정되어 있는가?",ref:"ICH Q10 §4 Continual Improvement\nASQC Cost of Quality\nLean Waste Identification",crit:"【5점】폐기비용 ≤0.3% + 월 보고\n【4점】폐기비용 ≤0.5%\n【3점】폐기비용 0.6-1.0%\n【2점】폐기비용 1.1-1.5%\n【1점】폐기비용 >1.5% 또는 미관리",meas:"연간 폐기 비용 ÷ 연간 매출액\n× 100",top:"≤0.3%",avg:"1.0%"},
+{id:"MAT_16",part:1,area:"MAT",no:16,sub:"폐기 관리",title:"폐기 사유 분석",q:"최근 12개월 폐기 사유 Top 5가 파악되고, 각 사유별 개선대책이 수립되어 있는가? 개선 후 효과검증이 수행되는가?",ref:"Pareto Analysis\nICH Q10 §3.2 CAPA\nSix Sigma DMAIC",crit:"【5점】Top 5 분석 + 대책 + 효과검증\n【4점】Top 5 분석 + 대책 수립\n【3점】Top 5 분석만\n【2점】전체 집계만\n【1점】분석 없음",meas:"폐기 DB에서 사유별 Pareto\n→ Top 5 개선 계획 확인",top:"Top5+효과검증",avg:"집계만"},
+{id:"MAT_17",part:1,area:"MAT",no:17,sub:"Sampling",title:"Risk-based Sampling",q:"Sampling Plan이 Risk 기반(공급업체 등급 A/B/C, 품질이력)으로 수립되어 있는가? 등급에 따른 Sampling 빈도/양이 차등 적용되는가?",ref:"ICH Q9 §4.4 Risk Control\n21 CFR 211.84(b)\nEU GMP Annex 8 §5-8",crit:"【5점】3등급 + 빈도/양 차등 + 실적 반영\n【4점】3등급 + 차등 적용\n【3점】2등급 분류만\n【2점】등급화 없음\n【1점】Plan 없음",meas:"공급업체 등급 현황 + Sampling Plan\n→ 등급별 차등 여부",top:"3등급+차등",avg:"등급없음"},
+{id:"MAT_18",part:1,area:"MAT",no:18,sub:"Sampling",title:"Sampling 손실률",q:"QC 시험용 Sampling 손실률이 전체 사용량의 1% 이내인가? Composite Sampling 등 최적화 기법이 적용되어 있는가?",ref:"EU GMP Annex 8 §4\n21 CFR 211.84(c)\nUSP <1058> AIQ",crit:"【5점】손실률 ≤0.5% + 최적화 적용\n【4점】손실률 ≤1.0%\n【3점】손실률 1.1-1.5%\n【2점】손실률 1.6-2.0%\n【1점】손실률 >2%",meas:"QC Sampling량 ÷ 총 사용량 × 100",top:"≤0.5%",avg:"2.0%"},
+{id:"MAT_19",part:1,area:"MAT",no:19,sub:"포장재 관리",title:"포장 전환 Loss",q:"포장 라인 품목 전환 시 발생하는 Loss(시험포장, Reject, 설정조정)가 표준화되어 있는가? 전환 Loss ≤2%인가?",ref:"SMED Methodology\nISPE Baseline Vol.5 Ch.13\nLean Changeover",crit:"【5점】Loss ≤1% + SMED 적용\n【4점】Loss ≤2%\n【3점】Loss 2.1-3%\n【2점】Loss 3.1-5%\n【1점】Loss >5%",meas:"전환 시 발생 Loss량\n÷ 표준 Batch 크기 × 100",top:"≤1%",avg:"5%"},
+{id:"MAT_20",part:1,area:"MAT",no:20,sub:"포장재 관리",title:"인쇄 포장재 Reconciliation",q:"인쇄 포장재(라벨, 카톤, 설명서) 발행-사용-반납-폐기 전 과정이 100% Reconciliation 되는가? 불일치 0건인가?",ref:"EU GMP Annex 13\n21 CFR 211.122\nKGMP §18 포장재료관리",crit:"【5점】100% Reconciliation + 불일치 0건\n【4점】100% Reconciliation\n【3점】95-99% Reconciliation\n【2점】90-94%\n【1점】90% 미만",meas:"인쇄 포장재 발행량 - 사용량 - 반납량\n= 폐기량 일치 여부",top:"100%+0건",avg:"95%"},
+{id:"MAT_21",part:1,area:"MAT",no:21,sub:"입고 관리",title:"입고 불량률",q:"원료/자재 입고 시 불량률(시험 부적합, 외관 불량, 수량 오류)이 0.5% 이내인가? 공급업체별 불량률이 Tracking 되는가?",ref:"ICH Q10 §2.7 Supplier Mgmt\n21 CFR 211.84\nISO 9001:2015 §8.4",crit:"【5점】불량률 ≤0.3% + 업체별 Track\n【4점】불량률 ≤0.5%\n【3점】불량률 0.6-1.0%\n【2점】불량률 1.1-1.5%\n【1점】불량률 >1.5%",meas:"입고 불량 건수 ÷ 총 입고 건수\n× 100",top:"≤0.3%",avg:"1.5%"},
+{id:"MAT_22",part:1,area:"MAT",no:22,sub:"입고 관리",title:"공급업체 평가",q:"원료/자재 공급업체에 대한 연 1회 정기 평가(품질/납기/가격/서비스)가 수행되는가? 평가 결과에 따른 등급화(A/B/C/D) 및 조치가 있는가?",ref:"ICH Q10 §2.7\nFDA Supplier Qual. Guidance\nEU GMP Ch.5 §5.25-5.32",crit:"【5점】연1회 평가 + 4등급화 + 조치\n【4점】연1회 평가 + 등급화\n【3점】연1회 평가만\n【2점】격년 평가\n【1점】평가 없음",meas:"공급업체 평가 기록 확인\n→ 평가 항목, 등급, 조치 여부",top:"연1회+조치",avg:"평가만"},
+{id:"MAC_1",part:1,area:"MAC",no:1,sub:"OEE 관리",title:"OEE 측정 체계",q:"주요 설비(타정기, 코팅기, 포장기)에 대해 OEE(가동률×성능×품질)가 Batch별로 측정되는가? 측정 방법이 SEMI E10 표준을 따르는가?",ref:"SEMI E10-0304E OEE Standard\nTPM - JIPM\nISA-95 Performance Metrics",crit:"【5점】실시간 자동측정 + SEMI 준수\n【4점】Batch별 측정\n【3점】일별 측정\n【2점】주별 측정\n【1점】측정 안함",meas:"MES OEE 모듈 또는 수기 기록\n→ 측정 주기 및 방법 확인",top:"실시간",avg:"주별"},
+{id:"MAC_2",part:1,area:"MAC",no:2,sub:"OEE 관리",title:"OEE 목표 달성",q:"설비별 OEE 목표가 설정되어 있는가? OEE 목표 ≥85%(World Class)이고, 월별 목표 달성률이 관리되는가?",ref:"World Class OEE 85%\nTPM Excellence Award\nSEMI E79-0200",crit:"【5점】OEE ≥85% + 달성률 ≥95%\n【4점】OEE 80-84%\n【3점】OEE 70-79%\n【2점】OEE 60-69%\n【1점】OEE <60% 또는 미측정",meas:"설비별 월간 OEE 실적\n÷ 목표 × 100 = 달성률",top:"≥85%",avg:"70%"},
+{id:"MAC_3",part:1,area:"MAC",no:3,sub:"OEE 관리",title:"Availability (가동률)",q:"계획 가동시간 대비 실제 가동시간 비율이 90% 이상인가? 정지 손실(고장, 셋업, 조정)이 유형별로 분류되는가?",ref:"SEMI E10 Availability\nTPM 6 Big Losses\nOEE Foundation",crit:"【5점】가동률 ≥95% + 손실 분류\n【4점】가동률 ≥90%\n【3점】가동률 85-89%\n【2점】가동률 80-84%\n【1점】가동률 <80%",meas:"(계획시간-정지시간) ÷ 계획시간\n× 100",top:"≥95%",avg:"85%"},
+{id:"MAC_4",part:1,area:"MAC",no:4,sub:"OEE 관리",title:"Performance (성능효율)",q:"이론 Cycle Time 대비 실제 생산속도 효율이 95% 이상인가? 속도 손실(Micro Stop, 속도저하)이 분류되는가?",ref:"SEMI E10 Performance\nTPM Speed Loss\nISA-95 Performance Efficiency",crit:"【5점】성능 ≥98% + 손실 분류\n【4점】성능 ≥95%\n【3점】성능 90-94%\n【2점】성능 85-89%\n【1점】성능 <85%",meas:"(이론Cycle×생산량) ÷ 가동시간\n× 100",top:"≥98%",avg:"90%"},
+{id:"MAC_5",part:1,area:"MAC",no:5,sub:"OEE 관리",title:"Quality (양품률)",q:"생산 수량 대비 양품 수량 비율이 99% 이상인가? 품질 손실(불량, 재작업, Startup Loss)이 분류되는가?",ref:"SEMI E10 Quality\nTPM Quality Loss\nSix Sigma DPMO",crit:"【5점】양품률 ≥99.5% + 손실 분류\n【4점】양품률 ≥99%\n【3점】양품률 97-98.9%\n【2점】양품률 95-96.9%\n【1점】양품률 <95%",meas:"양품 수량 ÷ 총 생산량 × 100",top:"≥99.5%",avg:"97%"},
+{id:"MAC_6",part:1,area:"MAC",no:6,sub:"고장 관리",title:"MTBF (평균고장간격)",q:"주요 설비의 MTBF(Mean Time Between Failures)가 측정되고 연간 10% 이상 개선 추세인가? 핵심 설비 MTBF ≥720시간인가?",ref:"IEC 61703:2016 Dependability\nISO 22400-2:2014 KPI\nTPM Reliability",crit:"【5점】MTBF ≥1000h + 연10%↑\n【4점】MTBF ≥720h\n【3점】MTBF 500-719h\n【2점】MTBF 300-499h\n【1점】MTBF <300h",meas:"총 가동시간 ÷ 고장 건수",top:"≥1000h",avg:"500h"},
+{id:"MAC_7",part:1,area:"MAC",no:7,sub:"고장 관리",title:"MTTR (평균수리시간)",q:"고장 발생 시 평균 수리시간(MTTR)이 핵심 설비 2시간 이내, 일반 설비 4시간 이내인가? MTTR 단축 활동이 수행되는가?",ref:"IEC 61703:2016 Maintainability\nTPM Maintenance Efficiency\nISO 22400-2:2014",crit:"【5점】핵심 ≤1h, 일반 ≤2h\n【4점】핵심 ≤2h, 일반 ≤4h\n【3점】핵심 ≤4h, 일반 ≤6h\n【2점】핵심 ≤6h, 일반 ≤8h\n【1점】MTTR >8h",meas:"총 수리시간 ÷ 고장 건수",top:"핵심≤1h",avg:"핵심4h"},
+{id:"MAC_8",part:1,area:"MAC",no:8,sub:"고장 관리",title:"반복 고장 관리",q:"동일 설비, 동일 부위 반복 고장(3회↑/년) 발생 시 100% Root Cause 분석(5-Why, FTA, FMEA)이 수행되는가? 재발률이 5% 이내인가?",ref:"IEC 60812:2018 FMEA\nIEC 61025:2006 FTA\nTPM Why-Why Analysis",crit:"【5점】100% RCA + 재발률 ≤3%\n【4점】100% RCA + 재발률 ≤5%\n【3점】90-99% RCA\n【2점】50-89% RCA\n【1점】RCA 미수행",meas:"반복 고장 후 동일 고장 재발 건수\n÷ 총 반복 고장 건수 × 100",top:"≤3%",avg:"10%"},
+{id:"MAC_9",part:1,area:"MAC",no:9,sub:"고장 관리",title:"Spare Parts 관리",q:"핵심 Spare Parts(Lead Time 4주↑, 단종 위험)가 정의되고 100% 재고 확보되어 있는가? 부품 재고 정확도가 98% 이상인가?",ref:"ISO 55001:2014 Asset Mgmt\nTPM Spare Parts Mgmt\nMRO 관리",crit:"【5점】핵심부품 100% + 정확도 ≥99%\n【4점】핵심부품 100% + 정확도 ≥98%\n【3점】핵심부품 90-99%\n【2점】핵심부품 80-89%\n【1점】핵심부품 <80%",meas:"핵심 부품 재고 有 품목 수\n÷ 핵심 부품 총 품목 수 × 100",top:"100%+99%",avg:"80%"},
+{id:"MAC_10",part:1,area:"MAC",no:10,sub:"예방보전",title:"PM 계획 이행률",q:"연간 예방보전(PM) 계획 대비 이행률이 95% 이상인가? 미이행 시 사유 분석 및 재일정 수립이 7일 이내 완료되는가?",ref:"ISO 55001:2014 Maintenance\nTPM Planned Maintenance\nGMP Annex 15 Equipment",crit:"【5점】이행률 ≥98% + 7일 내 재일정\n【4점】이행률 ≥95%\n【3점】이행률 90-94%\n【2점】이행률 85-89%\n【1점】이행률 <85%",meas:"실제 PM 수행 건수\n÷ 계획 PM 건수 × 100",top:"≥98%",avg:"85%"},
+{id:"MAC_11",part:1,area:"MAC",no:11,sub:"예방보전",title:"예지보전(PdM) 적용률",q:"예지보전 기술(진동분석, 열화상, 오일분석, 초음파)이 핵심 설비 50% 이상에 적용되어 있는가? PdM으로 인한 비계획 정지 감소 효과가 측정되는가?",ref:"ISO 17359:2011 Condition Monitoring\nISO 13381-1:2015 Prognosis\nIndustry 4.0",crit:"【5점】적용률 ≥70% + 효과 측정\n【4점】적용률 ≥50%\n【3점】적용률 30-49%\n【2점】적용률 10-29%\n【1점】적용률 <10%",meas:"PdM 적용 설비 수 ÷ 핵심 설비 수\n× 100",top:"≥70%",avg:"20%"},
+{id:"MAC_12",part:1,area:"MAC",no:12,sub:"Cleaning/Setup",title:"Cleaning 시간 표준화",q:"설비 Cleaning 소요시간이 공정별로 표준화되어 있는가? 실제 시간이 표준 대비 ±10% 이내인가? SMED 활동이 적용되는가?",ref:"FDA Cleaning Validation\nPIC/S PI 006-3\nSMED Methodology",crit:"【5점】표준 대비 ±5% + SMED 적용\n【4점】표준 대비 ±10%\n【3점】표준 대비 ±20%\n【2점】표준 대비 ±30%\n【1점】표준 없음",meas:"(실제 Cleaning 시간 - 표준)\n÷ 표준 × 100",top:"±5%",avg:"±20%"},
+{id:"MAC_13",part:1,area:"MAC",no:13,sub:"Cleaning/Setup",title:"Changeover 시간",q:"품목 전환(Changeover) 시간이 표준화되어 있고 30분 이내인가? SMED(Single Minute Exchange of Die) 활동으로 연간 10% 단축되는가?",ref:"SMED (Shigeo Shingo)\nLean Changeover\nTPM Quick Changeover",crit:"【5점】≤20분 + 연10%↓ 달성\n【4점】≤30분\n【3점】31-45분\n【2점】46-60분\n【1점】>60분",meas:"품목 전환 시작~첫 양품 생산\n시간 측정",top:"≤20분",avg:"60분"},
+{id:"MAC_14",part:1,area:"MAC",no:14,sub:"Cleaning/Setup",title:"Cleaning Validation 유효성",q:"Cleaning Validation이 최신 기준(MACO, PDE-based Limit)에 적합하고 유효한가? Worst Case 제품/설비가 정의되고 연 1회 Verification이 수행되는가?",ref:"FDA Cleaning Validation 1993\nEU GMP Annex 15 §10\nPIC/S PI 006-3 (2007)",crit:"【5점】100% 유효 + PDE + 연1회 Verify\n【4점】100% 유효 + MACO\n【3점】90-99% 유효\n【2점】80-89% 유효\n【1점】80% 미만 또는 미수행",meas:"CV 대상 설비 중 유효 건수\n÷ 전체 대상 × 100",top:"100%+PDE",avg:"90%"},
+{id:"MAC_15",part:1,area:"MAC",no:15,sub:"Micro Stop",title:"Micro Stop 측정",q:"5분 미만 짧은 정지(Micro Stop)가 자동으로 측정/집계되는가? Micro Stop이 OEE 손실의 3% 이내인가?",ref:"TPM Micro Stop Analysis\nOEE Loss Classification\nSEMI E10 Minor Loss",crit:"【5점】자동 집계 + 손실 ≤2%\n【4점】자동 집계 + 손실 ≤3%\n【3점】수동 집계\n【2점】측정만, 분석 미흡\n【1점】측정 안함",meas:"Micro Stop 시간 ÷ 총 가동시간\n× 100",top:"≤2%",avg:"8%"},
+{id:"MAC_16",part:1,area:"MAC",no:16,sub:"Micro Stop",title:"Micro Stop 개선",q:"Micro Stop 원인을 분류(재료/설비/작업자)하고 Top 3 원인에 대한 개선 활동이 수행되는가? 월별 Trend가 감소 추세인가?",ref:"TPM Autonomous Maintenance\nPareto Analysis\nKaizen",crit:"【5점】Top 3 개선 + 월 감소 추세\n【4점】Top 3 개선 활동 중\n【3점】원인 분류만\n【2점】집계만\n【1점】분석 없음",meas:"Micro Stop Pareto 분석 결과\n+ 개선 활동 기록",top:"Top3+감소",avg:"집계만"},
+{id:"MAC_17",part:1,area:"MAC",no:17,sub:"Calibration",title:"Calibration 이행률",q:"계측기/측정장비의 Calibration 계획 대비 이행률이 100%인가? 미이행 장비 사용 방지를 위한 Tag 또는 System Lock이 있는가?",ref:"21 CFR 211.68 Calibration\nISO 17025:2017\nGMP Annex 11",crit:"【5점】이행률 100% + System Lock\n【4점】이행률 100% + Tag\n【3점】이행률 98-99%\n【2점】이행률 95-97%\n【1점】이행률 <95%",meas:"실제 Cal. 완료 건수\n÷ 계획 건수 × 100",top:"100%+Lock",avg:"95%"},
+{id:"MAC_18",part:1,area:"MAC",no:18,sub:"Calibration",title:"Out of Calibration 영향평가",q:"Calibration 결과 부적합(OOC) 발생 시 해당 장비로 생산된 Batch에 대한 영향평가가 100% 수행되는가? OOC 조사 완료 기한(5일 이내)이 준수되는가?",ref:"FDA Calibration Guidance\n21 CFR 211.68(a)\nEU GMP Annex 11 §10",crit:"【5점】100% 영향평가 + 5일 내 완료\n【4점】100% 영향평가\n【3점】90-99% 영향평가\n【2점】50-89% 영향평가\n【1점】영향평가 미수행",meas:"OOC 발생 건수 대비\n영향평가 완료 건수",top:"100%+5일",avg:"90%"},
+{id:"MAC_19",part:1,area:"MAC",no:19,sub:"Utility",title:"Utility 사용량 KPI",q:"6대 Utility(전력, 가스, Steam, WFI, PW, Compressed Air) 사용량이 Batch당 또는 생산량당 KPI로 월별 관리되는가?",ref:"ISO 50001:2018 Energy Mgmt\nISPE Baseline Vol.2 Utilities\nGMP Annex 15 Utility Qual.",crit:"【5점】6개 Utility + Batch당 산출\n【4점】4-5개 Utility\n【3점】2-3개 Utility\n【2점】1개 Utility만\n【1점】관리 안함",meas:"Utility별 사용량 ÷ 생산량\n= 원단위 산출",top:"6개+Batch",avg:"2개"},
+{id:"MAC_20",part:1,area:"MAC",no:20,sub:"Utility",title:"Utility Qualification 유효성",q:"Utility 시스템(WFI, HVAC, Compressed Air)의 Qualification 상태가 100% 유효하고, 연속 모니터링(WFI-TOC/전도도, HVAC-차압/온습도)이 수행되는가?",ref:"ISPE Baseline Vol.4 Water\nEU GMP Annex 1 (2022) §6\nISPE HVAC Guide",crit:"【5점】100% 유효 + 연속 모니터링\n【4점】100% 유효\n【3점】90-99% 유효\n【2점】80-89% 유효\n【1점】80% 미만",meas:"Utility Qual. 유효 시스템 수\n÷ 전체 × 100",top:"100%+모니터링",avg:"90%"},
+{id:"MTD_1",part:1,area:"MTD",no:1,sub:"프로세스 효율",title:"Value Stream Mapping",q:"주요 제품(매출 Top 10)에 대해 Value Stream Mapping(VSM)이 수행되어 있는가? 부가가치(VA)/비부가가치(NVA) 활동이 식별되고, NVA 제거 계획이 있는가?",ref:"Lean Manufacturing TPS\nISO 22468:2020 VSM\nMike Rother \"Learning to See\"",crit:"【5점】Top 10 VSM 완료 + NVA 제거 진행\n【4점】Top 10 VSM 완료\n【3점】Top 5 VSM\n【2점】1-2개 제품만\n【1점】VSM 없음",meas:"매출 Top 10 제품 중 VSM 완료 수\n÷ 10 × 100",top:"Top10+개선",avg:"1-2개"},
+{id:"MTD_2",part:1,area:"MTD",no:2,sub:"프로세스 효율",title:"Lead Time 관리",q:"주문~출하까지 Total Lead Time이 측정되고 목표 대비 관리되는가? Lead Time 연간 10% 단축 목표가 있는가?",ref:"SCOR Model Lead Time\nLean Manufacturing Cycle Time\nTheory of Constraints",crit:"【5점】측정 + 연15%↓ 달성\n【4점】측정 + 연10%↓ 달성\n【3점】측정 + 목표 수립\n【2점】측정만\n【1점】측정 안함",meas:"출하일 - 주문일 = Lead Time\n연간 단축율 계산",top:"연15%↓",avg:"측정만"},
+{id:"MTD_3",part:1,area:"MTD",no:3,sub:"프로세스 효율",title:"First Time Right (FTR)",q:"처음부터 올바르게 생산하는 비율(FTR)이 98% 이상인가? 재작업/재시험 건수가 Batch당 집계되는가?",ref:"Six Sigma First Pass Yield\nASQ Quality Metrics\nWCM (World Class Mfg)",crit:"【5점】FTR ≥99% + 재작업 Tracking\n【4점】FTR ≥98%\n【3점】FTR 95-97%\n【2점】FTR 90-94%\n【1점】FTR <90%",meas:"(총 Batch - 재작업 Batch)\n÷ 총 Batch × 100",top:"≥99%",avg:"95%"},
+{id:"MTD_4",part:1,area:"MTD",no:4,sub:"문서 관리",title:"Batch Record Review 시간",q:"Batch Record 작성 완료부터 QA Review 완료까지 소요시간이 48시간 이내인가? Review 지연 시 Escalation이 있는가?",ref:"FDA Data Integrity Guidance\n21 CFR 211.192\nEU GMP Annex 11",crit:"【5점】≤24시간 + Escalation\n【4점】≤48시간\n【3점】49-72시간\n【2점】73-120시간\n【1점】>120시간",meas:"QA Review 완료 시점 - BR 완료 시점\n= Review 소요시간",top:"≤24시간",avg:"72시간"},
+{id:"MTD_5",part:1,area:"MTD",no:5,sub:"문서 관리",title:"전자 Batch Record(EBR) 도입률",q:"Electronic Batch Record(EBR) 시스템이 도입되어 있는가? 종이 BR 대비 기록 오류 50% 이상 감소, Review 시간 30% 이상 단축 효과가 있는가?",ref:"21 CFR Part 11\nGAMP 5 Appendix M5 EBR\nISPE GAMP Guide",crit:"【5점】EBR ≥90% + 효과 입증\n【4점】EBR ≥70%\n【3점】EBR 40-69%\n【2점】EBR 10-39%\n【1점】EBR <10%",meas:"EBR 적용 제품 수 ÷ 전체 제품 수\n× 100",top:"≥90%",avg:"30%"},
+{id:"MTD_6",part:1,area:"MTD",no:6,sub:"문서 관리",title:"문서 현행화율",q:"SOP, Master BR, Specification 등 핵심 문서가 100% 현행화되어 있는가? 정기 Review 주기(3년)가 준수되는가?",ref:"21 CFR 211.100 Written Procedures\nEU GMP Ch.4 Documentation\nISO 9001:2015 §7.5",crit:"【5점】현행화 100% + Review 100%\n【4점】현행화 100%\n【3점】현행화 95-99%\n【2점】현행화 90-94%\n【1점】현행화 <90%",meas:"유효기간 내 문서 수\n÷ 전체 문서 수 × 100",top:"100%",avg:"95%"},
+{id:"MTD_7",part:1,area:"MTD",no:7,sub:"Batch Release",title:"Release Lead Time",q:"생산 완료부터 Batch Release(출하승인)까지 소요일이 5일 이내인가? Release 지연 원인별 Pareto 분석이 수행되는가?",ref:"ICH Q10 §3.2.5 Management Review\n21 CFR 211.165 Release\nEU GMP Ch.6 QC",crit:"【5점】≤3일 + Pareto 분석\n【4점】≤5일\n【3점】6-7일\n【2점】8-10일\n【1점】>10일",meas:"Release 일자 - 생산 완료일\n= Release Lead Time",top:"≤3일",avg:"10일"},
+{id:"MTD_8",part:1,area:"MTD",no:8,sub:"Batch Release",title:"Pending Batch 관리",q:"Release 대기 중 Batch(Pending Batch) 현황이 실시간 파악되는가? Pending 7일 초과 Batch가 0건인가? Pending 사유별 해소 활동이 있는가?",ref:"Inventory Aging Analysis\nLean WIP Reduction\nFIFO Principle",crit:"【5점】실시간 + 7일 초과 0건\n【4점】실시간, 7일 초과 1-2건\n【3점】일별 파악\n【2점】주별 파악\n【1점】파악 안함",meas:"QMS에서 Pending Batch 조회\n→ 7일 초과 건수 확인",top:"실시간+0건",avg:"주별"},
+{id:"MTD_9",part:1,area:"MTD",no:9,sub:"Deviation",title:"Deviation 발생률",q:"월별 Deviation 발생률(건수/100 Batch)이 목표 이내인가? 분기별 Trend 분석 및 경영진 보고가 이루어지는가?",ref:"ICH Q10 §3.2.1 CAPA\nFDA PV Guidance Stage 3\nEU GMP Ch.1.4",crit:"【5점】≤3건/100 Batch + Trend 보고\n【4점】≤5건/100 Batch\n【3점】6-8건/100 Batch\n【2점】9-12건/100 Batch\n【1점】>12건/100 Batch",meas:"Deviation 건수 ÷ Batch 수\n× 100",top:"≤3건",avg:"8건"},
+{id:"MTD_10",part:1,area:"MTD",no:10,sub:"Deviation",title:"Deviation Closure Time",q:"Deviation 평균 Closure Time이 등급별 목표(Critical 15일, Major 30일, Minor 45일) 이내인가? 목표 초과 시 Escalation이 있는가?",ref:"ICH Q10 CAPA Timeliness\n21 CFR 211.192\nFDA Warning Letter",crit:"【5점】등급별 목표 준수 ≥95%\n【4점】준수율 90-94%\n【3점】준수율 80-89%\n【2점】준수율 70-79%\n【1점】준수율 <70%",meas:"등급별 목표 내 완료 건수\n÷ 등급별 총 건수 × 100",top:"≥95%",avg:"70%"},
+{id:"MTD_11",part:1,area:"MTD",no:11,sub:"Deviation",title:"Deviation 재발률",q:"동일/유사 원인으로 Deviation이 재발하는 비율이 5% 이내인가? 재발 시 CAPA Effectiveness Review가 수행되는가?",ref:"ICH Q10 CAPA Effectiveness\nFDA CAPA Guidance\nSix Sigma Control Phase",crit:"【5점】재발률 ≤3% + Effectiveness Review\n【4점】재발률 ≤5%\n【3점】재발률 6-10%\n【2점】재발률 11-15%\n【1점】재발률 >15%",meas:"재발 Deviation 건수\n÷ 총 Deviation 건수 × 100",top:"≤3%",avg:"15%"},
+{id:"MTD_12",part:1,area:"MTD",no:12,sub:"CAPA",title:"CAPA On-time Closure",q:"CAPA가 설정 기한 내 완료되는 비율이 90% 이상인가? 30일 지연 시 경영진 Escalation이 있는가?",ref:"21 CFR 820.100 CAPA\nISO 9001:2015 §10.2\nFDA QSIT CAPA",crit:"【5점】On-time ≥95% + Escalation\n【4점】On-time ≥90%\n【3점】On-time 80-89%\n【2점】On-time 70-79%\n【1점】On-time <70%",meas:"기한 내 완료 CAPA 수\n÷ 전체 CAPA 수 × 100",top:"≥95%",avg:"75%"},
+{id:"MTD_13",part:1,area:"MTD",no:13,sub:"CAPA",title:"CAPA Effectiveness 검증",q:"CAPA 완료 후 30-90일 내 효과성 검증이 100% 수행되는가? 검증 방법(재발 모니터링, 지표 확인)이 정의되어 있는가?",ref:"ICH Q10 §3.2.1 CAPA Effectiveness\nFDA Warning Letter Deficiencies\n21 CFR 211.22",crit:"【5점】100% 검증 + 방법 정의\n【4점】100% 검증\n【3점】90-99% 검증\n【2점】70-89% 검증\n【1점】검증 <70%",meas:"효과성 검증 완료 CAPA 수\n÷ 검증 대상 CAPA 수 × 100",top:"100%",avg:"70%"},
+{id:"MTD_14",part:1,area:"MTD",no:14,sub:"Change Control",title:"CC 처리 시간",q:"Change Control 평균 처리시간이 등급별 목표(Minor 30일, Major 60일, Critical 90일) 이내인가?",ref:"ICH Q10 §3.2.4 Change Mgmt\nICH Q12 Post-approval Changes\nEU GMP Ch.1.4(x)",crit:"【5점】등급별 목표 준수 ≥95%\n【4점】준수율 90-94%\n【3점】준수율 80-89%\n【2점】준수율 70-79%\n【1점】준수율 <70%",meas:"등급별 목표 내 완료 건수\n÷ 등급별 총 건수 × 100",top:"≥95%",avg:"70%"},
+{id:"MTD_15",part:1,area:"MTD",no:15,sub:"Change Control",title:"CC Impact Assessment",q:"변경 요청 시 Risk 기반 영향평가(제품품질, GMP, 규제, 안전)가 100% 수행되는가? 평가 Checklist가 표준화되어 있는가?",ref:"ICH Q9 Quality Risk Mgmt\nICH Q10 Change Mgmt\nPDA TR 54 Change Control",crit:"【5점】100% 평가 + Checklist 표준화\n【4점】100% 평가\n【3점】90-99% 평가\n【2점】70-89% 평가\n【1점】평가 <70%",meas:"영향평가 완료 CC 건수\n÷ 전체 CC 건수 × 100",top:"100%",avg:"85%"},
+{id:"MTD_16",part:1,area:"MTD",no:16,sub:"생산 계획",title:"계획 준수율",q:"생산 계획 대비 실적 준수율(OTIF: On-Time In-Full)이 95% 이상인가? 미준수 원인 분석이 수행되는가?",ref:"SCOR Perfect Order\nAPQC Process Classification\nS&OP",crit:"【5점】OTIF ≥98% + 원인 분석\n【4점】OTIF ≥95%\n【3점】OTIF 90-94%\n【2점】OTIF 85-89%\n【1점】OTIF <85%",meas:"계획 대비 일자/수량 충족 Batch\n÷ 전체 계획 Batch × 100",top:"≥98%",avg:"85%"},
+{id:"MTD_17",part:1,area:"MTD",no:17,sub:"생산 계획",title:"Capacity Utilization",q:"설비 Capacity 대비 활용률이 75-85% 범위인가? Capacity 부족/과잉에 대한 사전 예측(3개월↑)이 이루어지는가?",ref:"SCOR Asset Utilization\nISA-95 Capacity Planning\nRCCP",crit:"【5점】75-85% + 3개월 예측\n【4점】70-90%\n【3점】65-95%\n【2점】60-100%\n【1점】범위 이탈 빈번",meas:"실제 생산량 ÷ 최대 생산 Capacity\n× 100",top:"80%",avg:"65%"},
+{id:"HRM_1",part:1,area:"HRM",no:1,sub:"인력 구조",title:"적정 인원 산정",q:"공정별/직무별 적정 인원이 Work Measurement(Time Study, Work Sampling) 기반으로 산정되어 있는가? 연 1회 재검토가 수행되는가?",ref:"ILO Work Study\nMTM (Methods-Time Measurement)\nLabor Standards",crit:"【5점】100% 산정 + 연1회 재검토\n【4점】100% 산정\n【3점】80-99% 산정\n【2점】50-79% 산정\n【1점】50% 미만",meas:"적정 인원 산정 공정 수\n÷ 전체 공정 수 × 100",top:"100%+검토",avg:"50%"},
+{id:"HRM_2",part:1,area:"HRM",no:2,sub:"인력 구조",title:"인력 충원율",q:"적정 인원 대비 실제 인원 충원율이 95% 이상인가? 핵심 직무 공석 기간이 30일 이내인가?",ref:"Staffing Ratio\nTime-to-Fill Metrics\nWorkforce Planning",crit:"【5점】충원율 ≥98% + 공석 ≤20일\n【4점】충원율 ≥95% + 공석 ≤30일\n【3점】충원율 90-94%\n【2점】충원율 85-89%\n【1점】충원율 <85%",meas:"실제 인원 ÷ 적정 인원 × 100",top:"≥98%",avg:"90%"},
+{id:"HRM_3",part:1,area:"HRM",no:3,sub:"이직/퇴직",title:"연간 이직률",q:"연간 자발적 이직률이 8% 이하인가? 부서별/직급별/근속별 이직 분석이 수행되는가?",ref:"SHRM Turnover Metrics\nRetention Analysis\n인적자원관리",crit:"【5점】이직률 ≤5% + 상세 분석\n【4점】이직률 ≤8%\n【3점】이직률 9-12%\n【2점】이직률 13-18%\n【1점】이직률 >18%",meas:"자발적 이직자 ÷ 평균 재직자\n× 100",top:"≤5%",avg:"12%"},
+{id:"HRM_4",part:1,area:"HRM",no:4,sub:"이직/퇴직",title:"숙련자 이직률",q:"숙련 인력(경력 3년↑) 이직률이 별도 관리되고 3% 이하인가? 핵심인재 Retention 프로그램이 운영되는가?",ref:"Critical Talent Retention\nStay Interview\nRetention Bonus",crit:"【5점】이직률 ≤2% + Retention 프로그램\n【4점】이직률 ≤3%\n【3점】이직률 4-5%\n【2점】이직률 6-8%\n【1점】이직률 >8%",meas:"숙련자 이직자 ÷ 숙련자 총원\n× 100",top:"≤2%",avg:"8%"},
+{id:"HRM_5",part:1,area:"HRM",no:5,sub:"이직/퇴직",title:"이직 비용 산출",q:"이직에 따른 비용(채용비, 교육비, 생산성손실)이 산출되고 연간 총액이 관리되는가? 이직 비용 절감 목표가 있는가?",ref:"SHRM Cost of Turnover\nReplacement Cost Analysis\n인건비 분석",crit:"【5점】비용 산출 + 절감 목표 달성\n【4점】비용 산출 + 목표 수립\n【3점】비용 산출만\n【2점】일부 항목만\n【1점】산출 안함",meas:"(채용비+교육비+손실비) × 이직자 수\n= 연간 이직 비용",top:"산출+달성",avg:"미산출"},
+{id:"HRM_6",part:1,area:"HRM",no:6,sub:"교육/역량",title:"연간 교육시간",q:"1인당 연간 교육시간이 60시간 이상인가? 직무별/직급별 교육시간이 차등 설정되어 있는가?",ref:"Training Hours per Employee\nISO 10015 Training Guidelines\n산안법 교육",crit:"【5점】≥80시간 + 차등 설정\n【4점】≥60시간\n【3점】40-59시간\n【2점】20-39시간\n【1점】<20시간",meas:"총 교육시간 ÷ 총 인원",top:"≥80시간",avg:"40시간"},
+{id:"HRM_7",part:1,area:"HRM",no:7,sub:"교육/역량",title:"교육 ROI",q:"교육 투자 비용(인건비 대비 %)을 측정하고, 교육 ROI(생산성 향상, 품질 개선)가 분석되는가?",ref:"Training Investment Ratio\nTraining ROI (Phillips Model)",crit:"【5점】교육비 ≥5% + ROI 측정\n【4점】교육비 ≥3%\n【3점】교육비 2-2.9%\n【2점】교육비 1-1.9%\n【1점】교육비 <1%",meas:"교육 비용 ÷ 총 인건비 × 100",top:"≥5%",avg:"2%"},
+{id:"HRM_8",part:1,area:"HRM",no:8,sub:"교육/역량",title:"역량 Gap 분석",q:"직무별 필요 역량(Competency Model)이 정의되고, 개인별 역량 평가 후 Gap에 따른 IDP(개인개발계획)가 수립되는가?",ref:"Competency Model\nCompetency Assessment\nIDP (Individual Dev. Plan)",crit:"【5점】역량모델 + 평가 + IDP 100%\n【4점】역량모델 + 평가\n【3점】역량모델만\n【2점】일부 직무만\n【1점】역량 체계 없음",meas:"역량 정의 직무 수 ÷ 전체 직무 수\n× 100",top:"100%+IDP",avg:"일부만"},
+{id:"HRM_9",part:1,area:"HRM",no:9,sub:"근무 환경",title:"초과근무 관리",q:"월평균 초과근무 시간이 법적 한도(52시간/주) 및 목표(12시간/주↓) 이내인가? 만성 초과근무자(월 60시간↑)가 관리되는가?",ref:"근로기준법 연장근로 한도\n52시간 상한제\n근로시간 관리",crit:"【5점】초과근무 ≤10h/주 + 만성자 0\n【4점】초과근무 ≤12h/주\n【3점】초과근무 13-15h/주\n【2점】초과근무 16-20h/주\n【1점】초과근무 >20h/주",meas:"총 초과근무시간 ÷ 근무주 수\n÷ 인원 수",top:"≤10h",avg:"20h"},
+{id:"HRM_10",part:1,area:"HRM",no:10,sub:"근무 환경",title:"교대 근무 피로도 관리",q:"교대 근무가 피로도를 고려(야간 연속 ≤4일, 교대 주기 ≥24시간)하여 설계되어 있는가? 피로도 모니터링이 수행되는가?",ref:"NIOSH Shift Work Guidelines\n교대근무 건강관리지침(고용노동부)\nCircadian Rhythm",crit:"【5점】야간연속 ≤3일 + 모니터링\n【4점】야간연속 ≤4일\n【3점】야간연속 5일\n【2점】야간연속 6일\n【1점】야간연속 ≥7일",meas:"교대 일정표 검토\n→ 야간 연속 일수 확인",top:"≤3일",avg:"6일"},
+{id:"HRM_11",part:1,area:"HRM",no:11,sub:"보상/동기",title:"성과-보상 연계",q:"개인/팀 성과와 보상(인센티브, 승진)이 명확히 연계되어 있는가? 보상 체계 공정성 만족도가 70% 이상인가?",ref:"Pay-for-Performance\nMerit Pay System\nTotal Rewards",crit:"【5점】연계 100% + 만족도 ≥80%\n【4점】연계 100% + 만족도 ≥70%\n【3점】연계 있음, 만족도 60-69%\n【2점】연계 미흡\n【1점】연계 없음",meas:"성과-보상 연계 여부 + 만족도 조사",top:"100%+80%",avg:"미흡"},
+{id:"HRM_12",part:1,area:"HRM",no:12,sub:"보상/동기",title:"제안 제도 활성화",q:"개선 제안 제도가 운영되고, 1인당 월 1건↑ 제안이 이루어지는가? 채택률이 40% 이상인가?",ref:"Suggestion System\nKaizen Teian\nEmployee Involvement",crit:"【5점】≥2건/인/월 + 채택률 ≥50%\n【4점】≥1건 + 채택률 ≥40%\n【3점】0.5-0.9건\n【2점】0.1-0.4건\n【1점】<0.1건",meas:"월간 제안 건수 ÷ 인원 수",top:"≥2건",avg:"0.3건"},
+{id:"HRM_13",part:1,area:"HRM",no:13,sub:"조직 문화",title:"직원 몰입도",q:"직원 몰입도(Employee Engagement) 조사가 연 1회↑ 수행되고, 점수가 75점(100점 만점) 이상인가? 결과에 따른 개선 활동이 있는가?",ref:"Gallup Q12 Engagement Survey\neNPS (Employee Net Promoter Score)\nOrganization Culture Survey",crit:"【5점】연1회 + ≥80점 + 개선활동\n【4점】연1회 + ≥75점\n【3점】연1회 + 65-74점\n【2점】격년 조사\n【1점】조사 없음",meas:"몰입도 조사 점수 확인\n(100점 만점 기준)",top:"≥80점",avg:"65점"},
+{id:"HRM_14",part:1,area:"HRM",no:14,sub:"조직 문화",title:"소통 채널 운영",q:"경영진-현장 간 양방향 소통 채널(타운홀, 간담회, 익명의견함)이 월 1회↑ 운영되는가? 의견에 대한 피드백이 제공되는가?",ref:"Internal Communication\nEmployee Voice\nOpen-door Policy",crit:"【5점】월1회 + 피드백 100%\n【4점】월1회 운영\n【3점】분기1회\n【2점】반기1회\n【1점】채널 없음",meas:"소통 채널 운영 빈도\n+ 피드백 제공 여부",top:"월1회+피드백",avg:"분기1회"},
+{id:"TTR_1",part:1,area:"TTR",no:1,sub:"이전 계획",title:"Tech Transfer Protocol",q:"기술이전 Protocol이 수립되어 있는가? Protocol에 ①이전 범위 ②일정 ③R&R(RACI) ④성공 기준 ⑤Risk Assessment 5개 요소가 포함되어 있는가?",ref:"ICH Q10 §2.5 Technology Transfer\nISPE Tech Transfer Guide 2nd Ed.\nWHO TRS 961 Annex 7",crit:"【5점】5개 요소 모두 포함\n【4점】4개 요소\n【3점】3개 요소\n【2점】1-2개 요소\n【1점】Protocol 없음",meas:"Protocol 검토\n→ 5개 요소 포함 여부",top:"5개 요소",avg:"2개"},
+{id:"TTR_2",part:1,area:"TTR",no:2,sub:"이전 계획",title:"Risk Assessment",q:"기술이전 전 Risk Assessment(공정/분석/설비/규제 Risk)가 수행되고, Mitigation Plan이 수립되어 있는가?",ref:"ICH Q9 Quality Risk Mgmt\nISPE TT Guide Ch.6 Risk Mgmt\nFMEA Methodology",crit:"【5점】100% Risk 평가 + Mitigation\n【4점】100% 평가, Plan 미흡\n【3점】주요 Risk만 평가\n【2점】일부 Risk 누락\n【1점】평가 없음",meas:"Risk Assessment 문서 확인\n→ 4개 영역 평가 여부",top:"100%+Plan",avg:"일부만"},
+{id:"TTR_3",part:1,area:"TTR",no:3,sub:"지식 이전",title:"Knowledge Transfer",q:"개발 단계 지식(Design Space, CPP, CQA, 공정 이해, Troubleshooting)이 문서화되어 생산에 100% 이전되는가? Knowledge Gap이 식별/해소되는가?",ref:"ICH Q8(R2) Pharmaceutical Dev.\nICH Q10 §2.6 Knowledge Mgmt\nISPE TT Guide Ch.4",crit:"【5점】100% 이전 + Gap 해소\n【4점】100% 이전\n【3점】80-99% 이전\n【2점】60-79% 이전\n【1점】60% 미만",meas:"Knowledge Package Checklist\n→ 이전 완료 항목 비율",top:"100%+Gap해소",avg:"80%"},
+{id:"TTR_4",part:1,area:"TTR",no:4,sub:"지식 이전",title:"Analytical Method Transfer",q:"분석법 이전(AMT) Protocol이 수립되고, Equivalence(동등성)가 통계적으로 입증되는가? 이전 허용기준이 사전 정의되어 있는가?",ref:"USP <1224> Transfer of Analytical Procedures\nICH Q2(R2) Analytical Validation\nFDA Guidance Analytical",crit:"【5점】Protocol + 통계적 Equivalence\n【4점】Protocol + Equivalence\n【3점】Protocol만\n【2점】Equivalence 미흡\n【1점】AMT 미수행",meas:"AMT Protocol + 이전 결과 보고서\n→ Equivalence 입증 여부",top:"통계적 입증",avg:"Protocol만"},
+{id:"TTR_5",part:1,area:"TTR",no:5,sub:"Scale-up",title:"Scale-up Factor 정의",q:"Lab→Pilot→Commercial Scale-up Factor가 정의되고, Critical Parameter의 Scale 의존성(전단력, 혼합시간, 열전달)이 평가되는가?",ref:"ICH Q8(R2) §3.2 Process Dev.\nScale-up Theory (Dimensionless)\nISPE TT Guide Ch.5",crit:"【5점】Factor 정의 + 3개↑ Parameter 평가\n【4점】Factor 정의 + 2개 평가\n【3점】Factor 정의만\n【2점】일부만\n【1점】정의 없음",meas:"Scale-up 보고서\n→ Factor 및 Parameter 평가 여부",top:"정의+3개",avg:"일부만"},
+{id:"TTR_6",part:1,area:"TTR",no:6,sub:"Scale-up",title:"Engineering Batch",q:"Engineering Batch(Trial Batch)가 1-3회 수행되어 Scale-up이 검증되는가? 평가 기준(Yield, 품질, 공정능력)이 사전 정의되어 있는가?",ref:"FDA PV Guidance 2011 Stage 1\nEU GMP Annex 15 Process Val.\nISPE TT Guide Ch.7",crit:"【5점】1-3회 수행 + 기준 정의\n【4점】수행, 기준 미흡\n【3점】1회만 수행\n【2점】기록 부실\n【1점】미수행",meas:"Engineering Batch 기록\n→ 수행 횟수 및 평가 결과",top:"1-3회+기준",avg:"1회만"},
+{id:"TTR_7",part:1,area:"TTR",no:7,sub:"Validation",title:"Process Validation 계획",q:"Process Validation Protocol이 FDA/EMA 요건에 적합하게 수립되는가? PPQ Batch 수(최소 3개)와 Acceptance Criteria가 적정한가?",ref:"FDA PV Guidance 2011 Stage 2\nEU GMP Annex 15 (2015)\nICH Q8/Q9/Q10",crit:"【5점】FDA/EMA 적합 + PPQ ≥3\n【4점】적합, PPQ 부족\n【3점】일부 미흡\n【2점】주요 요건 누락\n【1점】Protocol 부재",meas:"PV Protocol 검토\n→ 규제 요건 충족 여부",top:"적합+PPQ≥3",avg:"일부미흡"},
+{id:"TTR_8",part:1,area:"TTR",no:8,sub:"Validation",title:"Cleaning Validation",q:"교차오염 방지를 위한 Cleaning Validation이 Health-based Limit(PDE)를 적용하여 수행되는가? MACO 계산이 적정한가?",ref:"FDA Cleaning Validation 1993\nEMA CPMP Cleaning Val. 2018\nPIC/S PI 006-3 (2007)",crit:"【5점】PDE 적용 + MACO 적정\n【4점】MACO만 적용\n【3점】Limit 계산 미흡\n【2점】일부 설비 누락\n【1점】CV 미수행",meas:"CV Protocol/Report\n→ Limit 계산 방법 확인",top:"PDE+MACO",avg:"MACO만"},
+{id:"TTR_9",part:1,area:"TTR",no:9,sub:"인력/교육",title:"기술 교육 수행",q:"수탁 Site 생산/QC 인력에게 기술 교육(공정 이해, CQA/CPP, Troubleshooting)이 100% 수행되고, 교육 효과성이 평가되는가?",ref:"ICH Q10 §2.6 Knowledge Mgmt\nISPE TT Guide Ch.8 Training\n21 CFR 211.25",crit:"【5점】100% 교육 + 효과성 평가\n【4점】100% 교육\n【3점】80-99% 교육\n【2점】50-79% 교육\n【1점】50% 미만",meas:"교육 이수 현황\n÷ 대상 인원 × 100",top:"100%+평가",avg:"80%"},
+{id:"TTR_10",part:1,area:"TTR",no:10,sub:"인력/교육",title:"기술 지원 체계",q:"초기 생산(첫 3 Batch↑) 시 연구소 기술 지원(On-site Support)이 있는가? 지원 기간/범위/Hotline이 정의되어 있는가?",ref:"ISPE TT Guide Ch.9 Post-Transfer\nTechnical Support Agreement\nKnowledge Transfer Plan",crit:"【5점】On-site 3 Batch + Hotline\n【4점】On-site 1-2 Batch\n【3점】Remote 지원만\n【2점】지원 미흡\n【1점】지원 없음",meas:"기술 지원 계획 및 기록\n→ 지원 범위 확인",top:"On-site+Hotline",avg:"Remote만"},
+{id:"TTR_11",part:1,area:"TTR",no:11,sub:"이전 완료",title:"완료 기준 정의",q:"기술이전 완료 기준(Acceptance Criteria)이 사전에 정의되어 있는가? 완료 판정 프로세스(양측 서명)가 있는가?",ref:"ISPE TT Guide Ch.10 Closure\nTT Closure Criteria\nTT Completion Report",crit:"【5점】기준 100% 정의 + 양측 서명\n【4점】기준 정의, 서명 미흡\n【3점】기준 일부 정의\n【2점】기준 불명확\n【1점】기준 없음",meas:"TT 완료 기준 문서\n→ 명확성 및 서명 여부",top:"정의+서명",avg:"불명확"},
+{id:"TTR_12",part:1,area:"TTR",no:12,sub:"이전 완료",title:"Lessons Learned",q:"기술이전 과정의 Lessons Learned가 정리되고 Knowledge DB에 반영되는가? 향후 이전에 활용되는가?",ref:"ICH Q10 §2.6 Knowledge Mgmt\nISPE TT Guide Ch.10\nLessons Learned Workshop",crit:"【5점】정리 + DB 반영 + 활용\n【4점】정리 + DB 반영\n【3점】정리만\n【2점】일부 정리\n【1점】정리 없음",meas:"Lessons Learned 문서\n+ Knowledge DB 확인",top:"정리+DB+활용",avg:"일부"},
+{id:"TTR_13",part:1,area:"TTR",no:13,sub:"Post-Transfer",title:"CPV 연계",q:"기술이전 후 Continued Process Verification(CPV)에 연계되어 Process Trend가 모니터링되는가? 이전 후 3년간 강화 모니터링이 있는가?",ref:"FDA PV Guidance 2011 Stage 3\nEU GMP Annex 15 §5.28-5.30\nICH Q10 §3.1",crit:"【5점】CPV 연계 + 3년 강화 모니터링\n【4점】CPV 연계\n【3점】일부 모니터링\n【2점】모니터링 미흡\n【1점】연계 없음",meas:"CPV 프로그램에 TT 제품 포함 여부\n+ 모니터링 기간 확인",top:"CPV+3년강화",avg:"일부만"},
+{id:"TTR_14",part:1,area:"TTR",no:14,sub:"Post-Transfer",title:"규제 기관 통보",q:"기술이전에 따른 규제 기관 통보/승인 요건(Site 변경, 제조소 추가)이 파악되고 적시에 이행되는가?",ref:"FDA SUPAC-IR/MR Guidance\nEMA Variation Regulation\n약사법 변경허가/신고",crit:"【5점】요건 100% 파악 + 적시 이행\n【4점】요건 파악, 이행 지연\n【3점】주요 요건만 파악\n【2점】일부 누락\n【1점】파악 안함",meas:"규제 요건 Checklist\n+ 통보/승인 기록",top:"100%+적시",avg:"일부누락"},
+{id:"CST_1",part:2,area:"CST",no:1,sub:"표준원가",title:"표준원가 체계 구축",q:"전 제품에 대해 표준원가(재료비/노무비/경비)가 수립되어 있는가? 표준원가는 연 1회↑ 갱신되고, 실제원가와 비교 분석되는가?",ref:"K-IFRS 1002 재고자산\n원가회계기준(한국회계기준원)\nISO 9001:2015 §7.1.5",crit:"【5점】100% 수립 + 연1회 갱신 + 월별 분석\n【4점】100% 수립 + 연1회 갱신\n【3점】80-99% 수립\n【2점】50-79% 수립\n【1점】50% 미만",meas:"표준원가 설정 제품 수\n÷ 전체 제품 수 × 100",top:"100%+월분석",avg:"80%"},
+{id:"CST_2",part:2,area:"CST",no:2,sub:"표준원가",title:"재료비 차이 분석",q:"표준 재료비 대비 실제 재료비 차이(Price Variance + Usage Variance)가 월별로 분석되는가? 차이율이 ±3% 이내인가?",ref:"Cost Variance Analysis\nMaterial Price/Usage Variance\nABC (Activity-Based Costing)",crit:"【5점】월별 분석 + 차이율 ±2% 이내\n【4점】월별 분석 + 차이율 ±3% 이내\n【3점】월별 분석, 차이율 ±5%\n【2점】분기별 분석\n【1점】분석 안함",meas:"|(실제 재료비 - 표준)|\n÷ 표준 재료비 × 100",top:"±2%",avg:"±5%"},
+{id:"CST_3",part:2,area:"CST",no:3,sub:"표준원가",title:"노무비 차이 분석",q:"표준 노무비 대비 실제 노무비 차이(Rate Variance + Efficiency Variance)가 분석되는가? 생산성(kg/인/시간)이 Tracking 되는가?",ref:"Labor Variance Analysis\nLabor Efficiency Metrics\n생산성 지표 관리",crit:"【5점】월별 분석 + 차이율 ±3% + 생산성 개선\n【4점】월별 분석 + 차이율 ±5%\n【3점】분기별 분석\n【2점】반기별 분석\n【1점】분석 안함",meas:"|(실제 노무비 - 표준)|\n÷ 표준 노무비 × 100",top:"±3%",avg:"±8%"},
+{id:"CST_4",part:2,area:"CST",no:4,sub:"표준원가",title:"제조경비 차이 분석",q:"제조간접비(감가상각, 유틸리티, 수선비 등) 배부 기준이 합리적이고, 예산 대비 실적이 월별 분석되는가?",ref:"Overhead Variance Analysis\nCost Allocation Methods\nABC Costing",crit:"【5점】ABC 적용 + 월별 분석 + 차이 ±5%\n【4점】전통배부 + 월별 분석\n【3점】분기별 분석\n【2점】반기별 분석\n【1점】분석 안함",meas:"|(실제 경비 - 예산)|\n÷ 예산 × 100",top:"±5%",avg:"±15%"},
+{id:"CST_5",part:2,area:"CST",no:5,sub:"품질비용(COQ)",title:"품질비용 측정 체계",q:"품질비용(COQ: Cost of Quality)이 4개 범주(예방/평가/내부실패/외부실패)로 분류되어 측정되는가? COQ/매출 비율이 관리되는가?",ref:"ASQ Cost of Quality Model\nISO 10014:2021 QMS Financial\nPAF Model (Juran)",crit:"【5점】4범주 측정 + COQ/매출 ≤10%\n【4점】4범주 측정 + COQ/매출 ≤15%\n【3점】3범주 측정\n【2점】일부 범주만\n【1점】측정 안함",meas:"COQ 총액 ÷ 매출액 × 100",top:"≤10%",avg:"20-25%"},
+{id:"CST_6",part:2,area:"CST",no:6,sub:"품질비용(COQ)",title:"예방비용 비율",q:"품질비용 중 예방비용(교육, 공정개선, SPC, 예방보전) 비율이 20% 이상인가? 예방비용 증가에 따른 실패비용 감소 효과가 분석되는가?",ref:"Prevention Cost Analysis\nJuran Cost of Quality\nCrosby PONC/POCPOC",crit:"【5점】예방비용 ≥25% + 효과 분석\n【4점】예방비용 ≥20%\n【3점】예방비용 15-19%\n【2점】예방비용 10-14%\n【1점】예방비용 <10%",meas:"예방비용 ÷ 총 품질비용 × 100",top:"≥25%",avg:"10-15%"},
+{id:"CST_7",part:2,area:"CST",no:7,sub:"품질비용(COQ)",title:"내부실패비용 관리",q:"내부실패비용(재작업, 폐기, 수율손실, 재시험)이 품질비용의 30% 이하인가? 항목별 Pareto 분석이 수행되는가?",ref:"Internal Failure Cost\nScrap/Rework Analysis\nYield Loss Costing",crit:"【5점】내부실패 ≤25% + Pareto + 개선\n【4점】내부실패 ≤30%\n【3점】내부실패 31-40%\n【2점】내부실패 41-50%\n【1점】내부실패 >50%",meas:"내부실패비용 ÷ 총 품질비용 × 100",top:"≤25%",avg:"35-40%"},
+{id:"CST_8",part:2,area:"CST",no:8,sub:"품질비용(COQ)",title:"외부실패비용 관리",q:"외부실패비용(리콜, 반품처리, 고객불만, 소송)이 발생 건수 및 금액으로 집계되는가? 외부실패 0건이 목표인가?",ref:"External Failure Cost\nRecall Cost Analysis\nProduct Liability Cost",crit:"【5점】집계 + 외부실패 0건\n【4점】집계 + 외부실패 1-2건/년\n【3점】집계만\n【2점】일부 항목만\n【1점】집계 안함",meas:"외부실패 발생 건수 및 총 비용",top:"0건",avg:"2-3건/년"},
+{id:"CST_9",part:2,area:"CST",no:9,sub:"폐기/재작업",title:"폐기 비용 관리",q:"연간 폐기 비용이 매출 대비 0.5% 이내인가? 폐기 원인별(유효기간, 품질부적합, 공정실패) 분석이 월별로 수행되는가?",ref:"Scrap Cost Analysis\nWaste Reduction Program\nLean Waste Identification",crit:"【5점】폐기비용 ≤0.3% + 월별 분석\n【4점】폐기비용 ≤0.5%\n【3점】폐기비용 0.6-1.0%\n【2점】폐기비용 1.1-1.5%\n【1점】폐기비용 >1.5%",meas:"연간 폐기 비용 ÷ 연간 매출액\n× 100",top:"≤0.3%",avg:"1.0%"},
+{id:"CST_10",part:2,area:"CST",no:10,sub:"폐기/재작업",title:"재작업 비용 관리",q:"재작업(Rework/Reprocess) 비용이 매출 대비 0.3% 이내인가? 재작업 발생 공정/원인별 분석이 수행되는가?",ref:"Rework Cost Analysis\nProcess Failure Cost\n21 CFR 211.115 Reprocessing",crit:"【5점】재작업비용 ≤0.2% + 원인 분석\n【4점】재작업비용 ≤0.3%\n【3점】재작업비용 0.4-0.5%\n【2점】재작업비용 0.6-1.0%\n【1점】재작업비용 >1.0%",meas:"연간 재작업 비용 ÷ 연간 매출액\n× 100",top:"≤0.2%",avg:"0.8%"},
+{id:"CST_11",part:2,area:"CST",no:11,sub:"재고비용",title:"재고 유지비용 산출",q:"재고 유지비용(Carrying Cost: 자본비용, 보관비, 보험료, 진부화)이 평균 재고액의 15-25%로 산출되는가?",ref:"Inventory Carrying Cost\nEOQ Model\nK-IFRS 1002 재고자산",crit:"【5점】유지비용 15-20% + 최적화\n【4점】유지비용 15-25%\n【3점】유지비용 26-30%\n【2점】유지비용 >30%\n【1점】산출 안함",meas:"연간 재고 유지비용\n÷ 평균 재고액 × 100",top:"15-20%",avg:"25-30%"},
+{id:"CST_12",part:2,area:"CST",no:12,sub:"재고비용",title:"진부화(Obsolete) 손실",q:"유효기간 경과, 규격 변경 등으로 인한 진부화 손실이 재고액의 2% 이내인가? 6개월 이상 미출고 재고(Slow-moving)가 관리되는가?",ref:"Obsolete Inventory Analysis\nAging Analysis\nSlow-moving Inventory",crit:"【5점】진부화 ≤1% + Slow 5%↓\n【4점】진부화 ≤2%\n【3점】진부화 2.1-3%\n【2점】진부화 3.1-5%\n【1점】진부화 >5%",meas:"진부화 손실액 ÷ 평균 재고액\n× 100",top:"≤1%",avg:"4%"},
+{id:"CST_13",part:2,area:"CST",no:13,sub:"Utility 비용",title:"Batch당 Utility 비용",q:"제품별/Batch별 Utility(전력, 가스, 스팀, 용수, 압축공기) 비용이 산출되고 원가에 반영되는가?",ref:"Utility Cost Allocation\nISO 50001 Energy Mgmt\nEnergy Performance Indicator",crit:"【5점】Batch별 산출 + 원가 반영 + 최적화\n【4점】Batch별 산출 + 원가 반영\n【3점】공정별 산출\n【2점】공장 전체만\n【1점】산출 안함",meas:"제품별 Batch당 Utility 비용\n산출 여부",top:"Batch별+최적화",avg:"공장전체"},
+{id:"CST_14",part:2,area:"CST",no:14,sub:"Utility 비용",title:"에너지 비용 절감",q:"에너지 비용 절감 목표(연 3%↓)가 설정되고, 절감 활동(고효율 설비, 운전 최적화)이 수행되는가? 절감 효과가 금액으로 검증되는가?",ref:"ISO 50001 Energy Review\nEnergy Audit\n에너지이용합리화법",crit:"【5점】연 5%↓ 달성 + 효과 검증\n【4점】연 3%↓ 달성\n【3점】목표 수립, 미달성\n【2점】활동만, 측정 안함\n【1점】활동 없음",meas:"(전년 비용 - 금년 비용)\n÷ 전년 비용 × 100",top:"연5%↓",avg:"연1%↓"},
+{id:"CST_15",part:2,area:"CST",no:15,sub:"설비 비용",title:"유지보수비 관리",q:"설비 유지보수비(예방+사후)가 설비 자산가액의 5% 이내인가? 예방보전 비율이 60% 이상인가?",ref:"Maintenance Cost Analysis\nTPM Cost Management\nISO 55001 Asset Mgmt",crit:"【5점】유지보수비 ≤3% + 예방 70%↑\n【4점】유지보수비 ≤5% + 예방 60%↑\n【3점】유지보수비 ≤7%\n【2점】유지보수비 ≤10%\n【1점】유지보수비 >10%",meas:"유지보수비 ÷ 설비 자산가액\n× 100",top:"≤3%",avg:"8%"},
+{id:"CST_16",part:2,area:"CST",no:16,sub:"설비 비용",title:"TCO (총소유비용)",q:"주요 설비 도입 시 TCO(구매비+운영비+유지비+폐기비)가 분석되는가? CAPEX 투자 시 TCO 기반 의사결정이 이루어지는가?",ref:"Total Cost of Ownership\nLife Cycle Costing\nISO 55001 Asset Mgmt",crit:"【5점】TCO 분석 100% + 의사결정 반영\n【4점】TCO 분석 80%↑\n【3점】TCO 분석 50-79%\n【2점】TCO 분석 <50%\n【1점】분석 안함",meas:"주요 설비 TCO 분석 건수\n÷ 전체 투자 건수 × 100",top:"100%",avg:"30%"},
+{id:"CST_17",part:2,area:"CST",no:17,sub:"ABC 원가",title:"Activity-Based Costing 도입",q:"Activity-Based Costing(ABC)이 도입되어 제품별 실제 수익성이 분석되는가? Cost Driver(원가동인)가 정의되어 있는가?",ref:"Activity-Based Costing\nCost Driver Analysis\nKaplan & Cooper ABC Model",crit:"【5점】ABC 전면 도입 + 수익성 분석\n【4점】ABC 도입, 수익성 미반영\n【3점】Pilot 적용\n【2점】검토 중\n【1점】도입 안함",meas:"ABC 적용 제품 수 ÷ 전체 제품 수\n× 100",top:"전면도입",avg:"Pilot"},
+{id:"CST_18",part:2,area:"CST",no:18,sub:"ABC 원가",title:"제품별 수익성 분석",q:"제품별 실제 수익성(Gross Margin, Contribution Margin)이 월별로 분석되는가? 저수익 제품에 대한 개선/단종 의사결정이 이루어지는가?",ref:"Product Profitability Analysis\nContribution Margin Analysis\nSKU Rationalization",crit:"【5점】월별 분석 + 의사결정 반영\n【4점】월별 분석\n【3점】분기별 분석\n【2점】반기/연별 분석\n【1점】분석 안함",meas:"제품별 Contribution Margin\n산출 및 분석 여부",top:"월별+의사결정",avg:"반기"},
+{id:"CST_19",part:2,area:"CST",no:19,sub:"위탁/환율",title:"CMO 원가 관리",q:"위탁생산(CMO) 원가가 자체 생산 원가와 비교 분석되는가? CMO Fee 적정성이 연 1회↑ 검토되는가?",ref:"CMO Cost Analysis\nMake vs Buy Analysis\nOutsourcing Economics",crit:"【5점】비교 분석 + 연1회 검토 + 최적화\n【4점】비교 분석 + 검토\n【3점】비교 분석만\n【2점】CMO 원가만 집계\n【1점】분석 안함",meas:"CMO 원가 vs 자체 생산 원가\n비교 분석 여부",top:"분석+최적화",avg:"집계만"},
+{id:"CST_20",part:2,area:"CST",no:20,sub:"위탁/환율",title:"환율 리스크 관리",q:"수입 원료/자재의 환율 변동 리스크가 관리되는가? 환헤지(Forward, Option) 전략이 수립되어 있는가? 환차손익이 원가에 반영되는가?",ref:"FX Risk Management\nHedging Strategy\nK-IFRS 1021 환율변동효과",crit:"【5점】환헤지 100% + 원가 반영 + 관리\n【4점】환헤지 + 원가 반영\n【3점】환헤지만\n【2점】모니터링만\n【1점】관리 안함",meas:"환헤지 적용 비율\n+ 환차손익 관리 여부",top:"100%+관리",avg:"모니터링"},
+{id:"FIN_1",part:2,area:"FIN",no:1,sub:"예산 관리",title:"연간 예산 수립",q:"제조 부문 연간 예산이 전년 12월까지 수립되는가? 예산 수립 시 Zero-base 또는 Activity-based 방식이 적용되는가?",ref:"예산관리규정\nZero-Based Budgeting\nActivity-Based Budgeting",crit:"【5점】12월 수립 + ZBB/ABB 적용\n【4점】12월 수립\n【3점】1월 수립\n【2점】2월 이후 수립\n【1점】예산 미수립",meas:"예산 수립 완료 시점 확인",top:"12월+ABB",avg:"1월"},
+{id:"FIN_2",part:2,area:"FIN",no:2,sub:"예산 관리",title:"월별 예실 분석",q:"예산 대비 실적(예실) 분석이 월별로 수행되는가? 차이 10% 이상 항목에 대해 원인 분석 및 대책이 수립되는가?",ref:"Budget vs Actual Analysis\nVariance Analysis\nManagement Reporting",crit:"【5점】월별 분석 + 차이 10%↑ 원인분석\n【4점】월별 분석\n【3점】분기별 분석\n【2점】반기별 분석\n【1점】분석 안함",meas:"예실 분석 주기 및\n차이 분석 여부 확인",top:"월별+원인분석",avg:"분기"},
+{id:"FIN_3",part:2,area:"FIN",no:3,sub:"예산 관리",title:"Rolling Forecast",q:"분기 1회 이상 Rolling Forecast(향후 12개월 예측)가 업데이트 되는가? Forecast 정확도가 측정되는가?",ref:"Rolling Forecast\nContinuous Planning\nForecast Accuracy",crit:"【5점】분기 Update + 정확도 ≥90%\n【4점】분기 Update\n【3점】반기 Update\n【2점】연 1회만\n【1점】Forecast 없음",meas:"Forecast 업데이트 주기\n+ 정확도 = 1 - |실적-예측|/실적",top:"분기+90%",avg:"연1회"},
+{id:"FIN_4",part:2,area:"FIN",no:4,sub:"CAPEX",title:"투자 타당성 분석",q:"CAPEX 투자 전 100% 타당성 분석(NPV, IRR, Payback)이 수행되는가? 투자 기준(Hurdle Rate, Payback 기간)이 정의되어 있는가?",ref:"Capital Budgeting\nNPV/IRR Analysis\nISO 55001 Asset Mgmt",crit:"【5점】100% 분석 + 기준 정의 + 준수\n【4점】100% 분석 + 기준 정의\n【3점】80-99% 분석\n【2점】50-79% 분석\n【1점】분석 미흡",meas:"타당성 분석 수행 건수\n÷ 전체 투자 건수 × 100",top:"100%+기준",avg:"70%"},
+{id:"FIN_5",part:2,area:"FIN",no:5,sub:"CAPEX",title:"투자 후 효과 검증",q:"CAPEX 투자 완료 후 1년 내 효과 검증(Post-Investment Review)이 수행되는가? 당초 기대 효과 대비 실제 효과가 비교되는가?",ref:"Post-Investment Review\nCapital Effectiveness\nROIC Analysis",crit:"【5점】100% 검증 + 기대 대비 90%↑\n【4점】100% 검증\n【3점】70-99% 검증\n【2점】50-69% 검증\n【1점】검증 미수행",meas:"효과 검증 수행 건수\n÷ 투자 완료 건수 × 100",top:"100%+90%",avg:"50%"},
+{id:"FIN_6",part:2,area:"FIN",no:6,sub:"재고 회계",title:"재고 평가 방법 일관성",q:"재고 평가 방법(선입선출, 이동평균)이 일관되게 적용되는가? 회계 기준 변경 시 영향 분석이 수행되는가?",ref:"K-IFRS 1002 재고자산\nInventory Valuation Methods\n재고자산 회계처리",crit:"【5점】일관 적용 + 영향 분석 100%\n【4점】일관 적용\n【3점】일부 품목 불일치\n【2점】변경 빈번\n【1점】기준 미정립",meas:"재고 평가 방법 일관성\n및 변경 이력 확인",top:"일관+분석",avg:"일관"},
+{id:"FIN_7",part:2,area:"FIN",no:7,sub:"재고 회계",title:"재고 실사",q:"연 1회 전수 실사, 월별 Cycle Count(10%↑)가 수행되는가? 실사 결과 차이에 대한 조정 기준이 있는가?",ref:"Physical Inventory Count\nCycle Counting\nK-IFRS 1002 실사",crit:"【5점】연1회 전수 + 월 Cycle 10%↑\n【4점】연1회 전수 + 분기 Cycle\n【3점】연1회 전수만\n【2점】연2회 표본\n【1점】실사 부정기",meas:"실사 수행 주기 및\nCycle Count 비율 확인",top:"전수+월10%",avg:"연1회만"},
+{id:"FIN_8",part:2,area:"FIN",no:8,sub:"재고 회계",title:"재고 정확도",q:"WMS/ERP 시스템 재고와 실물 재고 일치율이 99.5% 이상인가?",ref:"Inventory Record Accuracy\nWMS Data Integrity\nGS1 Standards",crit:"【5점】정확도 ≥99.8%\n【4점】정확도 99.5-99.7%\n【3점】정확도 98-99.4%\n【2점】정확도 97-97.9%\n【1점】정확도 <97%",meas:"|시스템 재고 - 실물 재고|\n÷ 시스템 재고 × 100",top:"≥99.8%",avg:"98%"},
+{id:"FIN_9",part:2,area:"FIN",no:9,sub:"재고 회계",title:"재고 회전율",q:"원료/자재/완제품 재고 회전율(연간 출고액/평균재고액)이 목표 이상인가? Dead Stock 비율이 3% 이내인가?",ref:"Inventory Turnover Ratio\nWorking Capital Management\nDead Stock Analysis",crit:"【5점】회전율 ≥6회 + Dead ≤2%\n【4점】회전율 ≥4회 + Dead ≤3%\n【3점】회전율 3회\n【2점】회전율 2회\n【1점】회전율 <2회",meas:"연간 출고액 ÷ 평균 재고액",top:"≥6회",avg:"2-3회"},
+{id:"FIN_10",part:2,area:"FIN",no:10,sub:"운전자본",title:"DSO (매출채권회수일)",q:"매출채권 회수일(DSO)이 45일 이내인가? 연체 채권(90일↑) 비율이 3% 이내인가?",ref:"Days Sales Outstanding\nA/R Management\nCredit Management",crit:"【5점】DSO ≤30일 + 연체 ≤2%\n【4점】DSO ≤45일 + 연체 ≤3%\n【3점】DSO 46-60일\n【2점】DSO 61-90일\n【1점】DSO >90일",meas:"(매출채권 ÷ 일평균 매출)\n+ 연체 채권 비율",top:"DSO≤30",avg:"DSO 60"},
+{id:"FIN_11",part:2,area:"FIN",no:11,sub:"운전자본",title:"DPO (매입채무지급일)",q:"매입채무 지급일(DPO)이 60일 내외로 적정하게 관리되는가? 조기 지급 할인(Early Payment Discount) 활용이 있는가?",ref:"Days Payables Outstanding\nA/P Management\nWorking Capital Optimization",crit:"【5점】DPO 60일 + Discount 활용\n【4점】DPO 45-75일\n【3점】DPO 30-44일 또는 76-90일\n【2점】DPO <30일 또는 >90일\n【1점】관리 안함",meas:"매입채무 ÷ 일평균 매입액",top:"DPO 60+Disc",avg:"DPO 45"},
+{id:"FIN_12",part:2,area:"FIN",no:12,sub:"운전자본",title:"CCC (현금전환주기)",q:"Cash Conversion Cycle(DSO+DIO-DPO)이 60일 이내인가? CCC 단축 목표가 설정되어 있는가?",ref:"Cash Conversion Cycle\nWorking Capital Management\nCash Flow Optimization",crit:"【5점】CCC ≤45일 + 연 5일 단축\n【4점】CCC ≤60일\n【3점】CCC 61-90일\n【2점】CCC 91-120일\n【1점】CCC >120일 또는 미측정",meas:"DSO + DIO - DPO = CCC",top:"≤45일",avg:"90일"},
+{id:"FIN_13",part:2,area:"FIN",no:13,sub:"KPI/보고",title:"재무 KPI Dashboard",q:"제조 관련 재무 KPI(원가율, 생산성, 재고회전 등)가 Dashboard로 실시간 또는 일별 조회 가능한가?",ref:"Financial KPI Dashboard\nBusiness Intelligence\nReal-time Reporting",crit:"【5점】실시간 Dashboard + 자동 Alert\n【4점】일별 Dashboard\n【3점】주별 Report\n【2점】월별 Report\n【1점】Report 없음",meas:"Dashboard 업데이트 주기\n및 자동화 여부 확인",top:"실시간+Alert",avg:"월별"},
+{id:"FIN_14",part:2,area:"FIN",no:14,sub:"KPI/보고",title:"경영진 보고",q:"제조 원가/생산성/품질비용이 월 1회 이상 경영진에게 보고되는가? 보고 내용이 의사결정에 활용되는가?",ref:"Management Reporting\nExecutive Dashboard\nPerformance Review",crit:"【5점】월1회 보고 + 의사결정 반영\n【4점】월1회 보고\n【3점】분기1회 보고\n【2점】반기1회 보고\n【1점】보고 부정기",meas:"경영진 보고 주기 및\n의사결정 활용 여부",top:"월1회+반영",avg:"분기"},
+{id:"FIN_15",part:2,area:"FIN",no:15,sub:"내부통제",title:"내부회계관리제도",q:"내부회계관리제도(K-SOX)가 구축되어 운영되는가? 연 1회 평가 및 외부감사인 검토가 수행되는가?",ref:"주식회사등의외부감사법\n내부회계관리제도 운영기준\nCOSO Internal Control",crit:"【5점】구축 + 운영 + 외부검토 적정\n【4점】구축 + 운영\n【3점】구축, 운영 미흡\n【2점】일부 구축\n【1점】미구축",meas:"내부회계관리제도\n평가 결과 확인",top:"적정",avg:"구축중"},
+{id:"FIN_16",part:2,area:"FIN",no:16,sub:"내부통제",title:"재무 통제 활동",q:"제조 관련 재무 통제(구매승인, 재고조정, 폐기승인)가 문서화되고 100% 이행되는가? 통제 위반 건이 0건인가?",ref:"Financial Controls\nSOD (Segregation of Duties)\nAuthorization Matrix",crit:"【5점】100% 이행 + 위반 0건\n【4점】100% 이행, 경미 위반 有\n【3점】90-99% 이행\n【2점】80-89% 이행\n【1점】이행 <80%",meas:"통제 활동 이행률 및\n위반 건수 확인",top:"100%+0건",avg:"90%"},
+{id:"SHE_1",part:2,area:"SHE",no:1,sub:"안전 체계",title:"안전보건 경영시스템",q:"ISO 45001 또는 동등 수준의 안전보건 경영시스템이 구축되어 있는가? 인증 취득 또는 자체 운영이 되는가?",ref:"ISO 45001:2018 OHSMS\n산업안전보건법 §4\n안전보건경영시스템 지침",crit:"【5점】ISO 45001 인증 + 우수 운영\n【4점】ISO 45001 인증\n【3점】자체 시스템 운영\n【2점】부분적 운영\n【1점】시스템 미구축",meas:"ISO 45001 인증 여부 또는\n자체 시스템 수준 확인",top:"인증+우수",avg:"자체운영"},
+{id:"SHE_2",part:2,area:"SHE",no:2,sub:"안전 체계",title:"안전보건 조직/예산",q:"전담 안전보건 조직이 있고, 안전보건 예산이 충분히 편성(매출 대비 0.5%↑)되어 90% 이상 집행되는가?",ref:"산안법 §17-19 안전보건관리체제\n안전보건 예산편성 지침\nKOSHA 가이드",crit:"【5점】조직 有 + 예산 0.5%↑ + 집행 95%\n【4점】조직 有 + 예산 + 집행 90%\n【3점】조직 有 + 예산 부족\n【2점】조직 미흡\n【1점】조직/예산 없음",meas:"안전 조직 현황 + 예산/집행률",top:"0.5%+95%",avg:"0.3%+80%"},
+{id:"SHE_3",part:2,area:"SHE",no:3,sub:"위험성 평가",title:"위험성 평가 이행률",q:"전 공정/작업에 대해 위험성 평가가 연 1회 이상 수행되는가? 위험성 평가 이행률이 100%인가?",ref:"산안법 §36 위험성평가\n위험성평가 지침(KOSHA)\nISO 45001 §6.1",crit:"【5점】이행률 100% + 연1회↑ 갱신\n【4점】이행률 100%\n【3점】이행률 90-99%\n【2점】이행률 80-89%\n【1점】이행률 <80%",meas:"위험성 평가 완료 공정 수\n÷ 전체 공정 수 × 100",top:"100%+갱신",avg:"90%"},
+{id:"SHE_4",part:2,area:"SHE",no:4,sub:"위험성 평가",title:"위험성 감소 조치",q:"위험성 평가 결과 \"상\" 등급에 대해 100% 감소 조치가 완료되었는가? 조치 완료까지 평균 소요일이 30일 이내인가?",ref:"위험성평가 지침 §9\nHierarchy of Controls\nISO 45001 §8.1.2",crit:"【5점】완료율 100% + 평균 ≤15일\n【4점】완료율 100% + 평균 ≤30일\n【3점】완료율 90-99%\n【2점】완료율 80-89%\n【1점】완료율 <80%",meas:"\"상\" 등급 조치 완료 건수\n÷ 전체 \"상\" 등급 건수 × 100",top:"100%+15일",avg:"85%"},
+{id:"SHE_5",part:2,area:"SHE",no:5,sub:"위험성 평가",title:"PSM (공정안전관리)",q:"유해위험설비에 대해 PSM 12대 요소가 100% 운영되는가? 정기 자체감사 및 외부심사가 수행되는가?",ref:"산안법 §44 공정안전보고서\nPSM 12대 요소\nKOSHA 18001",crit:"【5점】12대 요소 100% + 외부심사 P\n【4점】12대 요소 100%\n【3점】10-11개 요소\n【2점】8-9개 요소\n【1점】<8개 요소 또는 해당없음",meas:"PSM 해당 여부 +\n12대 요소 이행률",top:"100%+P",avg:"10개"},
+{id:"SHE_6",part:2,area:"SHE",no:6,sub:"재해 관리",title:"재해율(TRIR)",q:"Total Recordable Incident Rate(TRIR)가 업계 평균 이하인가? 중대재해(사망, 중상해) 0건인가?",ref:"OSHA Recordkeeping (1904)\n산안법 재해통계\nKOSHA 재해통계",crit:"【5점】TRIR <1.0 + 중대재해 0건\n【4점】TRIR <2.0 + 중대재해 0건\n【3점】TRIR 2.0-3.0\n【2점】TRIR 3.1-5.0\n【1점】TRIR >5.0 또는 중대재해 有",meas:"TRIR = (재해건수×200,000)\n÷ 총근로시간",top:"<1.0+0건",avg:"2.5"},
+{id:"SHE_7",part:2,area:"SHE",no:7,sub:"재해 관리",title:"도수율/강도율",q:"도수율(재해건수×1,000,000/근로시간)이 2.0 이하인가? 강도율(손실일수×1,000/근로시간)이 0.5 이하인가?",ref:"산안법 재해통계 산정기준\n고용노동부 재해통계\nILO 재해지표",crit:"【5점】도수율 <1.0 + 강도율 <0.2\n【4점】도수율 <2.0 + 강도율 <0.5\n【3점】도수율 2.0-5.0\n【2점】도수율 5.1-10.0\n【1점】도수율 >10.0",meas:"도수율 = (재해×1,000,000)/근로시간\n강도율 = (손실일×1,000)/근로시간",top:"도수<1.0",avg:"도수5.0"},
+{id:"SHE_8",part:2,area:"SHE",no:8,sub:"재해 관리",title:"Near Miss 보고",q:"Near Miss(아차사고) 보고 건수가 월 20건 이상인가? 보고된 Near Miss 100%에 대해 분석 및 개선이 이루어지는가?",ref:"Heinrich Pyramid\nNear Miss Reporting System\nISO 45001 §10.2",crit:"【5점】≥30건/월 + 100% 분석/개선\n【4점】≥20건/월 + 100% 분석\n【3점】10-19건/월\n【2점】<10건/월\n【1점】보고 체계 없음",meas:"월간 Near Miss 보고 건수\n+ 분석/개선 비율",top:"≥30건+개선",avg:"10건"},
+{id:"SHE_9",part:2,area:"SHE",no:9,sub:"작업 안전",title:"작업허가제(PTW)",q:"고위험 작업(밀폐공간, 화기, 고소, 굴착)에 대해 작업허가제가 100% 운영되는가? 허가 없이 작업 진행 건이 0건인가?",ref:"산안법 §38 특별안전교육\n밀폐공간작업 프로그램\nISO 45001 §8.1.1",crit:"【5점】PTW 100% + 미허가 0건\n【4점】PTW 100%\n【3점】PTW 90-99%\n【2점】PTW 80-89%\n【1점】PTW <80%",meas:"PTW 발급 건수 ÷\n고위험 작업 건수 × 100",top:"100%+0건",avg:"90%"},
+{id:"SHE_10",part:2,area:"SHE",no:10,sub:"작업 안전",title:"LOTO (잠금/태그아웃)",q:"설비 정비/수리 시 LOTO(Lock Out Tag Out) 절차가 100% 이행되는가? LOTO 미이행 건이 0건인가?",ref:"산안법 §38조의2\nOSHA 1910.147 LOTO\nLOTO 절차서",crit:"【5점】LOTO 100% + 미이행 0건\n【4점】LOTO 100%\n【3점】LOTO 90-99%\n【2점】LOTO 80-89%\n【1점】LOTO <80%",meas:"LOTO 이행 건수 ÷\n정비 작업 건수 × 100",top:"100%+0건",avg:"90%"},
+{id:"SHE_11",part:2,area:"SHE",no:11,sub:"작업 안전",title:"PPE 착용률",q:"Personal Protective Equipment(PPE) 착용률이 100%인가? PPE 미착용 적발 건이 0건인가?",ref:"산안법 §32 보호구 착용\n보호구 관리 프로그램\nISO 45001",crit:"【5점】착용률 100% + 적발 0건\n【4점】착용률 100%\n【3점】착용률 98-99%\n【2점】착용률 95-97%\n【1점】착용률 <95%",meas:"PPE 착용 확인 수\n÷ 점검 대상 수 × 100",top:"100%+0건",avg:"95%"},
+{id:"SHE_12",part:2,area:"SHE",no:12,sub:"보건 관리",title:"작업환경 측정",q:"법정 작업환경 측정이 반기 1회 이상 100% 수행되는가? 노출기준 초과 작업장이 0개소인가?",ref:"산안법 §125 작업환경측정\n작업환경측정 기준\nKOSHA 가이드",crit:"【5점】100% 측정 + 초과 0개소\n【4점】100% 측정\n【3점】90-99% 측정\n【2점】80-89% 측정\n【1점】측정 <80%",meas:"측정 완료 대상 수 ÷\n법정 대상 수 × 100",top:"100%+0개소",avg:"90%"},
+{id:"SHE_13",part:2,area:"SHE",no:13,sub:"보건 관리",title:"특수건강검진",q:"유해인자 취급 근로자의 특수건강검진 이행률이 100%인가? 유소견자(D1, D2)에 대해 100% 사후관리가 수행되는가?",ref:"산안법 §130 건강진단\n건강진단 실시 기준\n직업성 질환 관리",crit:"【5점】이행률 100% + 사후관리 100%\n【4점】이행률 100%\n【3점】이행률 95-99%\n【2점】이행률 90-94%\n【1점】이행률 <90%",meas:"검진 완료자 ÷ 대상자 × 100\n+ 사후관리 비율",top:"100%+100%",avg:"95%"},
+{id:"SHE_14",part:2,area:"SHE",no:14,sub:"환경 관리",title:"환경 인허가 관리",q:"대기/수질/폐기물 관련 환경 인허가가 100% 유효하고, 허가 조건이 준수되는가?",ref:"대기환경보전법\n물환경보전법\n폐기물관리법",crit:"【5점】100% 유효 + 조건 100% 준수\n【4점】100% 유효\n【3점】일부 갱신 지연\n【2점】조건 미준수 有\n【1점】인허가 미흡",meas:"유효 인허가 수 ÷\n필요 인허가 수 × 100",top:"100%+준수",avg:"95%"},
+{id:"SHE_15",part:2,area:"SHE",no:15,sub:"환경 관리",title:"배출 기준 준수",q:"대기/수질 배출 허용기준 준수율이 100%인가? 기준 초과 건이 0건인가?",ref:"대기환경보전법 §16 배출허용기준\n물환경보전법 §32\n배출시설 운영기준",crit:"【5점】준수율 100% + 초과 0건\n【4점】준수율 100%\n【3점】준수율 98-99%\n【2점】준수율 95-97%\n【1점】준수율 <95%",meas:"기준 이내 측정 건수 ÷\n총 측정 건수 × 100",top:"100%+0건",avg:"98%"},
+{id:"SHE_16",part:2,area:"SHE",no:16,sub:"환경 관리",title:"폐기물 관리",q:"폐기물 종류별 보관/처리가 법적 기준에 100% 적합한가? 폐기물 위탁처리업체 관리가 수행되는가?",ref:"폐기물관리법 §13-18\n폐기물 분류 및 처리 기준\n지정폐기물 관리",crit:"【5점】100% 적합 + 업체 관리 철저\n【4점】100% 적합\n【3점】95-99% 적합\n【2점】90-94% 적합\n【1점】적합 <90%",meas:"적합 처리 품목 수 ÷\n전체 폐기물 품목 × 100",top:"100%+관리",avg:"95%"},
+{id:"SHE_17",part:2,area:"SHE",no:17,sub:"비상대응",title:"비상대응 훈련",q:"화재/폭발/누출 등 비상상황 대응 훈련이 연 2회 이상 수행되는가? 훈련 후 평가 및 개선이 이루어지는가?",ref:"산안법 §35 비상조치계획\n소방법 소방훈련\nISO 45001 §8.2",crit:"【5점】연 4회↑ + 평가/개선 100%\n【4점】연 2회 + 평가/개선\n【3점】연 2회\n【2점】연 1회\n【1점】훈련 미실시",meas:"연간 비상훈련 횟수 및\n평가/개선 여부",top:"연4회+개선",avg:"연2회"},
+{id:"SHE_18",part:2,area:"SHE",no:18,sub:"비상대응",title:"안전 문화 수준",q:"안전 문화 진단이 연 1회 이상 수행되고, 점수가 70점(100점 만점) 이상인가? 결과에 따른 개선 활동이 있는가?",ref:"Safety Culture Assessment\nBradley Curve\nKOSHA 안전문화 진단",crit:"【5점】연1회 + ≥80점 + 개선 활동\n【4점】연1회 + ≥70점\n【3점】연1회 + 60-69점\n【2점】격년 실시\n【1점】진단 미실시",meas:"안전문화 진단 점수\n(100점 만점)",top:"≥80점",avg:"65점"},
+{id:"GMP_1",part:2,area:"GMP",no:1,sub:"품질 시스템",title:"PQS (Pharmaceutical Quality System)",q:"ICH Q10 기반 PQS가 구축되어 있는가? 품질 방침/목표가 수립되고, 10개↑ 품질 KPI가 월별 모니터링 되는가?",ref:"ICH Q10 Pharmaceutical QS\n21 CFR 211 QA\nEU GMP Ch.1 PQS",crit:"【5점】PQS 구축 + KPI 15개↑ + 월별\n【4점】PQS 구축 + KPI 10개↑\n【3점】PQS 구축, KPI 미흡\n【2점】부분 구축\n【1점】미구축",meas:"PQS 문서 + 품질 KPI 개수\n+ 모니터링 주기 확인",top:"15개+월별",avg:"5개"},
+{id:"GMP_2",part:2,area:"GMP",no:2,sub:"품질 시스템",title:"Management Review",q:"경영진 검토(Management Review)가 연 1회 이상 수행되고, 품질 KPI 추이, 개선과제가 보고되는가?",ref:"ICH Q10 §4.1 Management Review\n21 CFR 211.180(e) Annual Review\nEU GMP Ch.1.4",crit:"【5점】연2회↑ + 개선과제 이행\n【4점】연1회 + 개선과제\n【3점】연1회\n【2점】격년\n【1점】미수행",meas:"Management Review 기록\n+ 개선과제 이행 여부",top:"연2회+이행",avg:"연1회"},
+{id:"GMP_3",part:2,area:"GMP",no:3,sub:"품질 시스템",title:"QRM (품질위험관리)",q:"ICH Q9 기반 품질위험관리가 적용되는가? Risk Tool(FMEA, HACCP, FTA)이 변경관리, 일탈, Validation에 활용되는가?",ref:"ICH Q9 Quality Risk Mgmt\nFMEA (IEC 60812)\nHACCP (Codex)",crit:"【5점】QRM 100% + Tool 3개↑ 활용\n【4점】QRM 80%↑\n【3점】QRM 일부 적용\n【2점】Risk 개념만\n【1점】QRM 미적용",meas:"QRM 적용 건수 ÷\n전체 해당 건수 × 100",top:"100%+Tool",avg:"일부"},
+{id:"GMP_4",part:2,area:"GMP",no:4,sub:"시설/환경",title:"GMP 시설 적격성",q:"제조시설(클린룸, 공조, Utility)이 GMP 요건에 100% 적합하고, IQ/OQ/PQ가 완료되어 있는가?",ref:"21 CFR 211 Subpart C Buildings\nEU GMP Annex 1 (2022)\nKGMP 시설기준",crit:"【5점】100% 적합 + Qual. 완료\n【4점】100% 적합\n【3점】95-99% 적합\n【2점】90-94% 적합\n【1점】적합 <90%",meas:"GMP 시설 적합 항목 수\n÷ 전체 항목 × 100",top:"100%+Qual",avg:"95%"},
+{id:"GMP_5",part:2,area:"GMP",no:5,sub:"시설/환경",title:"청정구역 관리",q:"청정구역 등급(A/B/C/D)이 EU GMP Annex 1 (2022) 기준에 적합하고, 연속 모니터링이 수행되는가?",ref:"EU GMP Annex 1 (2022) §4\nISO 14644-1:2015\nASHRAE 170",crit:"【5점】Annex 1 적합 + 연속 모니터링\n【4점】Annex 1 적합\n【3점】구기준 적합\n【2점】일부 미흡\n【1점】부적합",meas:"청정구역 등급별 적합 여부\n+ 모니터링 방법",top:"Annex1+연속",avg:"구기준"},
+{id:"GMP_6",part:2,area:"GMP",no:6,sub:"시설/환경",title:"환경 모니터링",q:"환경 모니터링(EM) 프로그램이 수립되어 운영되는가? Alert/Action Limit이 통계적으로 설정되고, 일탈 시 100% 조사가 수행되는가?",ref:"EU GMP Annex 1 §9 EM\nPDA TR 13 EM\nUSP <1116>",crit:"【5점】EM 프로그램 + 통계적 Limit + 조사 100%\n【4점】EM 프로그램 + Limit\n【3점】EM 프로그램만\n【2점】일부 운영\n【1점】미운영",meas:"EM 프로그램 문서 + Limit 설정 근거\n+ 일탈 조사율",top:"통계+100%",avg:"프로그램만"},
+{id:"GMP_7",part:2,area:"GMP",no:7,sub:"Validation",title:"VMP (Validation Master Plan)",q:"Validation Master Plan이 수립되어 있고, 연간 Validation Schedule이 관리되는가? VMP가 변경 시 업데이트 되는가?",ref:"EU GMP Annex 15 §2 VMP\nFDA PV Guidance 2011\nISPE Baseline Guide",crit:"【5점】VMP + Schedule + 연1회 갱신\n【4점】VMP + Schedule\n【3점】VMP만\n【2점】VMP 미흡\n【1점】VMP 없음",meas:"VMP 존재 여부 +\nSchedule 관리 + 갱신 주기",top:"VMP+갱신",avg:"VMP만"},
+{id:"GMP_8",part:2,area:"GMP",no:8,sub:"Validation",title:"Process Validation",q:"Process Validation이 Lifecycle Approach(Stage 1-2-3)로 수행되는가? PPQ 후 CPV가 운영되는가?",ref:"FDA PV Guidance 2011\nEU GMP Annex 15 §5\nICH Q8/Q10",crit:"【5점】Lifecycle + CPV 운영\n【4점】Lifecycle 적용\n【3점】Traditional PV만\n【2점】PV 미흡\n【1점】PV 미수행",meas:"PV 접근법 확인\n+ CPV 프로그램 운영 여부",top:"Lifecycle+CPV",avg:"Traditional"},
+{id:"GMP_9",part:2,area:"GMP",no:9,sub:"Validation",title:"Cleaning Validation",q:"Cleaning Validation이 PDE(Permitted Daily Exposure) 기반 Health-based Limit으로 수행되는가? MACO 계산이 적정한가?",ref:"EMA CPMP Cleaning Val. 2018\nFDA Cleaning Val. 1993\nPIC/S PI 006-3",crit:"【5점】PDE 기반 + MACO 적정 + CV 100%\n【4점】PDE 기반 + CV 100%\n【3점】MACO만 + CV 100%\n【2점】CV 일부 미완료\n【1점】CV 미수행",meas:"CV Limit 계산 방법 (PDE/MACO)\n+ CV 완료율",top:"PDE+100%",avg:"MACO"},
+{id:"GMP_10",part:2,area:"GMP",no:10,sub:"Validation",title:"CSV (Computer System Val.)",q:"컴퓨터 시스템(MES, LIMS, ERP 등)에 대해 GAMP 5 기반 CSV가 수행되고 유효한가?",ref:"GAMP 5 Second Edition\n21 CFR Part 11\nEU GMP Annex 11",crit:"【5점】GAMP 5 + 100% 유효 + 재검증\n【4점】GAMP 5 + 100% 유효\n【3점】CSV 90-99% 유효\n【2점】CSV 80-89% 유효\n【1점】CSV <80%",meas:"CSV 완료/유효 시스템 수\n÷ 전체 대상 × 100",top:"100%+재검증",avg:"90%"},
+{id:"GMP_11",part:2,area:"GMP",no:11,sub:"Data Integrity",title:"ALCOA+ 준수",q:"Data Integrity 방침이 수립되고, ALCOA+ 원칙(귀속성, 가독성, 동시성, 원본성, 정확성 + 완전성, 일관성, 내구성, 가용성)이 100% 준수되는가?",ref:"FDA DI Guidance 2018\nMHRA GxP DI Guidance 2018\nPIC/S PI 041-1",crit:"【5점】방침 + ALCOA+ 100% + 자가진단\n【4점】방침 + ALCOA+ 100%\n【3점】방침 + ALCOA+ 일부\n【2점】방침만\n【1점】방침 없음",meas:"DI 자가진단 점수\n(100점 만점)",top:"≥90점",avg:"60점"},
+{id:"GMP_12",part:2,area:"GMP",no:12,sub:"Data Integrity",title:"Audit Trail 관리",q:"전자 시스템의 Audit Trail이 100% 활성화되어 있고, 정기적으로 검토(Review)되는가? Audit Trail Off 건이 0건인가?",ref:"21 CFR Part 11 §11.10(e)\nEU GMP Annex 11 §9\nGAMP 5 Audit Trail",crit:"【5점】100% 활성화 + 정기 검토 + Off 0건\n【4점】100% 활성화 + 정기 검토\n【3점】100% 활성화\n【2점】일부 비활성화\n【1점】관리 안함",meas:"Audit Trail 활성화 시스템 수\n÷ 전체 × 100",top:"100%+검토",avg:"일부"},
+{id:"GMP_13",part:2,area:"GMP",no:13,sub:"Data Integrity",title:"접근 권한 관리",q:"시스템 접근 권한이 Role-based로 관리되고, 공유 계정이 0개인가? 정기(분기1회↑) 권한 검토가 수행되는가?",ref:"21 CFR Part 11 §11.10(d)\nEU GMP Annex 11 §12\nISO 27001 Access Control",crit:"【5점】Role-based + 공유 0개 + 분기 검토\n【4점】Role-based + 공유 0개\n【3점】Role-based\n【2점】일부 공유 계정\n【1점】관리 미흡",meas:"공유 계정 수 +\n권한 검토 주기",top:"0개+분기",avg:"일부공유"},
+{id:"GMP_14",part:2,area:"GMP",no:14,sub:"시험실(QC)",title:"OOS 조사",q:"Out of Specification(OOS) 발생 시 100% 조사가 수행되고, 평균 30일 내 완료되는가? OOS 발생률이 0.1% 이하인가?",ref:"FDA OOS Guidance 2006\n21 CFR 211.165\nEU GMP Ch.6 QC",crit:"【5점】100% 조사 + ≤20일 + OOS ≤0.05%\n【4점】100% 조사 + ≤30일 + OOS ≤0.1%\n【3점】100% 조사\n【2점】90-99% 조사\n【1점】조사 <90%",meas:"OOS 조사 완료 건수 ÷ 발생 건수\n+ 평균 소요일 + 발생률",top:"100%+20일",avg:"95%"},
+{id:"GMP_15",part:2,area:"GMP",no:15,sub:"시험실(QC)",title:"OOT 모니터링",q:"Out of Trend(OOT) 모니터링 시스템이 구축되어 Alert/Action Limit이 설정되고, 선제적 조사가 수행되는가?",ref:"FDA Trending Guidance\nEU GMP Annex 15 §5.30\nSPC Control Charts",crit:"【5점】OOT 시스템 + Limit + 조사 100%\n【4점】OOT 시스템 + Limit\n【3점】OOT 시스템만\n【2점】수동 모니터링\n【1점】모니터링 없음",meas:"OOT 모니터링 시스템 유무\n+ Limit 설정 + 조사율",top:"시스템+조사",avg:"수동"},
+{id:"GMP_16",part:2,area:"GMP",no:16,sub:"일탈/CAPA",title:"Deviation 분류 체계",q:"Deviation이 Critical/Major/Minor로 분류되고, 등급별 처리 기한이 정의되어 있는가? 분류 기준이 명확한가?",ref:"ICH Q10 §3.2.1 Deviation\n21 CFR 211.192\nEU GMP Ch.1.4(xiv)",crit:"【5점】3등급 + 기한 정의 + 기준 명확\n【4점】3등급 + 기한 정의\n【3점】3등급만\n【2점】2등급 분류\n【1점】분류 없음",meas:"Deviation 분류 체계 +\n기한 정의 여부",top:"3등급+명확",avg:"2등급"},
+{id:"GMP_17",part:2,area:"GMP",no:17,sub:"일탈/CAPA",title:"CAPA 효과성",q:"CAPA 효과성 검증이 100% 수행되고, 재발률이 5% 이하인가? 효과 미흡 시 재조치가 이루어지는가?",ref:"ICH Q10 §3.2.1 CAPA Effectiveness\n21 CFR 820.100(d)\nFDA QSIT CAPA",crit:"【5점】100% 검증 + 재발률 ≤3% + 재조치\n【4점】100% 검증 + 재발률 ≤5%\n【3점】100% 검증\n【2점】80-99% 검증\n【1점】검증 <80%",meas:"효과성 검증 완료 건수 ÷ 대상\n+ 재발률",top:"100%+3%",avg:"90%+10%"},
+{id:"GMP_18",part:2,area:"GMP",no:18,sub:"출하 관리",title:"Batch Release",q:"QP(Qualified Person) 또는 동등 자격자에 의한 Batch Release가 이루어지는가? Release Checklist가 표준화되어 있는가?",ref:"EU GMP Annex 16 Batch Release\n21 CFR 211.165 Release\nKGMP 출하",crit:"【5점】QP Release + Checklist + 100%\n【4점】QP Release + Checklist\n【3점】QP Release만\n【2점】Release 절차 미흡\n【1점】절차 없음",meas:"QP Release 비율 +\nChecklist 표준화 여부",top:"100%+Checklist",avg:"Release만"},
+{id:"GMP_19",part:2,area:"GMP",no:19,sub:"출하 관리",title:"APR/PQR",q:"Annual Product Review(APR) 또는 Product Quality Review(PQR)가 전 제품에 대해 연 1회 수행되는가? Trend 분석이 포함되는가?",ref:"ICH Q10 §3.1.3 APR\n21 CFR 211.180(e)\nEU GMP Ch.1.10 PQR",crit:"【5점】100% 수행 + Trend + 개선\n【4점】100% 수행 + Trend\n【3점】100% 수행\n【2점】80-99% 수행\n【1점】수행 <80%",meas:"APR/PQR 완료 제품 수\n÷ 전체 제품 × 100",top:"100%+Trend",avg:"90%"},
+{id:"GMP_20",part:2,area:"GMP",no:20,sub:"실사 대비",title:"Self-Inspection",q:"내부 자체점검(Self-Inspection)이 연 1회 이상 전 영역에 대해 수행되는가? 지적사항 100% 해결되는가?",ref:"EU GMP Ch.9 Self-Inspection\n21 CFR 211.180(f)\nKGMP 자체점검",crit:"【5점】연2회↑ + 100% 해결 + 개선\n【4점】연1회 + 100% 해결\n【3점】연1회\n【2점】일부 영역만\n【1점】미수행",meas:"Self-Inspection 주기 +\n지적사항 해결률",top:"연2회+100%",avg:"연1회"},
+{id:"GMP_21",part:2,area:"GMP",no:21,sub:"실사 대비",title:"Mock Audit",q:"외부 전문가에 의한 Mock Audit(모의 실사)가 연 1회 이상 수행되는가? FDA/EMA 실사 기준이 적용되는가?",ref:"FDA/EMA Inspection Prep.\nMock Inspection Protocol\n실사 대응 체계",crit:"【5점】연1회↑ + FDA/EMA 기준 + 개선\n【4점】연1회 + FDA/EMA 기준\n【3점】연1회\n【2점】격년\n【1점】미수행",meas:"Mock Audit 주기 +\n적용 기준 확인",top:"연1회+FDA",avg:"격년"},
+{id:"CMP_1",part:2,area:"CMP",no:1,sub:"인허가",title:"제조업/품목 허가 유효성",q:"제조업 허가, 품목 허가/신고가 100% 유효하고, 변경 사항이 적시에 반영되는가?",ref:"약사법 §31 제조업허가\n약사법 §31 품목허가\n의약품 허가 규정",crit:"【5점】100% 유효 + 변경 100% 반영\n【4점】100% 유효\n【3점】일부 갱신 지연\n【2점】변경 미반영 有\n【1점】허가 미흡",meas:"유효 허가/신고 수 ÷\n필요 허가/신고 × 100",top:"100%+반영",avg:"95%"},
+{id:"CMP_2",part:2,area:"CMP",no:2,sub:"인허가",title:"KGMP 인증 유효성",q:"KGMP(한국 GMP) 인증이 100% 유효하고, 인증 범위가 생산 품목을 모두 Cover하는가?",ref:"의약품 제조 및 품질관리기준\nKGMP 인증 기준\n식약처 GMP 가이드",crit:"【5점】100% 유효 + Cover + 연장 적시\n【4점】100% 유효 + Cover\n【3점】100% 유효\n【2점】일부 미인증\n【1점】인증 미흡",meas:"KGMP 인증 범위 vs 생산 품목",top:"100%+Cover",avg:"95%"},
+{id:"CMP_3",part:2,area:"CMP",no:3,sub:"인허가",title:"해외 인허가 관리",q:"수출 대상국 GMP 인증(FDA, EMA, PIC/S 등)이 100% 유효하고, 갱신이 적시에 이루어지는가?",ref:"FDA cGMP Certification\nEMA GMP Certificate\nPIC/S MRA",crit:"【5점】100% 유효 + 갱신 적시 + 무결점\n【4점】100% 유효 + 갱신 적시\n【3점】100% 유효\n【2점】일부 만료\n【1점】인증 미흡",meas:"해외 GMP 인증 유효 건수\n÷ 필요 건수 × 100",top:"100%+무결점",avg:"90%"},
+{id:"CMP_4",part:2,area:"CMP",no:4,sub:"규제 대응",title:"규제 동향 모니터링",q:"국내외 규제 동향(식약처, FDA, EMA, ICH)이 월 1회 이상 모니터링되고, 영향 평가가 수행되는가?",ref:"Regulatory Intelligence\nICH Guidelines\nFDA/EMA Guidance",crit:"【5점】월1회 + 영향평가 + 대응계획\n【4점】월1회 + 영향평가\n【3점】월1회\n【2점】분기1회\n【1점】부정기",meas:"규제 동향 모니터링 주기\n+ 영향평가 여부",top:"월1회+대응",avg:"분기"},
+{id:"CMP_5",part:2,area:"CMP",no:5,sub:"규제 대응",title:"EU GMP Annex 1 대응",q:"EU GMP Annex 1 (2022) 개정 사항에 대한 Gap Assessment가 완료되고, 이행 계획이 수립되어 있는가?",ref:"EU GMP Annex 1 (2022)\nCCS (Contamination Control Strategy)\n무균제 제조관리",crit:"【5점】Gap 완료 + 계획 + 이행 80%↑\n【4점】Gap 완료 + 계획 수립\n【3점】Gap 진행 중\n【2점】착수 예정\n【1점】미착수",meas:"Annex 1 Gap Assessment 완료율\n+ 이행 진행률",top:"이행80%",avg:"Gap중"},
+{id:"CMP_6",part:2,area:"CMP",no:6,sub:"규제 대응",title:"Nitrosamine 대응",q:"해당 제품에 대해 Nitrosamine Risk Assessment가 완료되고, 필요 시 Confirmatory Testing이 수행되었는가?",ref:"FDA Nitrosamine Guidance\nEMA Nitrosamine Guidance\nICH M7",crit:"【5점】Risk 100% + Test 완료 + Control\n【4점】Risk 100% + Test 완료\n【3점】Risk 100%\n【2점】Risk 진행 중\n【1점】미착수",meas:"Nitrosamine Risk Assessment\n완료 제품 비율",top:"100%+Control",avg:"Risk중"},
+{id:"CMP_7",part:2,area:"CMP",no:7,sub:"실사 관리",title:"실사 대비 체계",q:"실사 대비 체계(팀 구성, 자료 준비, SME 지정, 시뮬레이션)가 구축되어 있는가? 실사 2개월 전 준비가 완료되는가?",ref:"실사 대응 SOP\nInspection Readiness Program\nFDA/EMA 실사 가이드",crit:"【5점】체계 구축 + 2개월 전 완료 + Mock\n【4점】체계 구축 + 2개월 전 완료\n【3점】체계 구축\n【2점】체계 미흡\n【1점】체계 없음",meas:"실사 대비 체계 수준 +\n준비 완료 시점",top:"체계+Mock",avg:"체계"},
+{id:"CMP_8",part:2,area:"CMP",no:8,sub:"실사 관리",title:"실사 지적사항 관리",q:"과거 실사 지적사항이 100% 기한 내 해결되고, 재발 방지 조치가 이행되는가? 동일 지적 재발이 0건인가?",ref:"Inspection Finding Resolution\nCAPE (Corrective Action Preventive Effectiveness)\n483 Response",crit:"【5점】100% 해결 + 재발 0건\n【4점】100% 해결\n【3점】90-99% 해결\n【2점】80-89% 해결\n【1점】해결 <80%",meas:"지적사항 해결 건수 ÷ 발생 건수\n+ 재발 건수",top:"100%+0건",avg:"90%"},
+{id:"CMP_9",part:2,area:"CMP",no:9,sub:"실사 관리",title:"Warning Letter 관리",q:"FDA Warning Letter, EU GMP Non-compliance 등 중대 지적이 0건인가? 발생 시 30일 내 대응이 이루어지는가?",ref:"FDA Warning Letter\nEU GMP Non-compliance\nRegulatory Action",crit:"【5점】중대 지적 0건 (5년간)\n【4점】중대 지적 0건 (3년간)\n【3점】지적 1건 + 해소\n【2점】지적 2건↑ + 해소\n【1점】미해소 지적 有",meas:"최근 5년간 중대 지적 건수\n+ 해소 여부",top:"0건(5년)",avg:"1건+해소"},
+{id:"CMP_10",part:2,area:"CMP",no:10,sub:"보고/신고",title:"이상사례 보고",q:"의약품 이상사례(부작용)가 법정 기한 내 100% 보고되는가? 중대한 이상사례는 15일 내 보고되는가?",ref:"약사법 §68 이상사례보고\n의약품등 안전성정보관리 규정\nICH E2A/E2B",crit:"【5점】100% 기한 내 + 중대 15일\n【4점】100% 기한 내\n【3점】95-99% 기한 내\n【2점】90-94% 기한 내\n【1점】보고 <90%",meas:"기한 내 보고 건수 ÷\n총 보고 대상 × 100",top:"100%+15일",avg:"95%"},
+{id:"CMP_11",part:2,area:"CMP",no:11,sub:"보고/신고",title:"품질 결함 보고",q:"품질 결함(회수, 중대 일탈) 발생 시 식약처에 적시 보고되는가? 회수 등급(1/2/3등급)에 따른 조치가 적정한가?",ref:"약사법 §72 회수\n의약품 회수절차\n품질결함 보고 지침",crit:"【5점】100% 적시 보고 + 조치 적정\n【4점】100% 적시 보고\n【3점】95-99% 보고\n【2점】보고 지연 有\n【1점】미보고 有",meas:"품질 결함 보고율 +\n조치 적정성",top:"100%+적정",avg:"95%"},
+{id:"CMP_12",part:2,area:"CMP",no:12,sub:"보고/신고",title:"정기 보고",q:"허가사항 변경, 정기 안전성 보고(PSUR/PBRER) 등이 법정 기한 내 100% 제출되는가?",ref:"의약품 허가 규정\nPSUR/PBRER 제출 기준\nICH E2C(R2)",crit:"【5점】100% 기한 내 + 여유 2주↑\n【4점】100% 기한 내\n【3점】95-99% 기한 내\n【2점】90-94% 기한 내\n【1점】기한 내 <90%",meas:"기한 내 제출 건수 ÷\n총 제출 대상 × 100",top:"100%+2주",avg:"95%"},
+{id:"CMP_13",part:2,area:"CMP",no:13,sub:"추적성",title:"Serialization",q:"의약품 일련번호(Serialization) 규제 대상 제품에 대해 100% 적용되고, 추적이 가능한가?",ref:"FDA DSCSA\nEU FMD\n의약품 이력추적관리",crit:"【5점】100% 적용 + 추적 100% + 검증\n【4점】100% 적용 + 추적\n【3점】100% 적용\n【2점】일부 미적용\n【1점】미적용",meas:"Serialization 적용 제품 수\n÷ 대상 제품 × 100",top:"100%+검증",avg:"90%"},
+{id:"CMP_14",part:2,area:"CMP",no:14,sub:"추적성",title:"원료/자재 추적",q:"원료/자재의 Lot별 추적(Batch Traceability)이 양방향(Forward/Backward)으로 가능한가? 추적 소요시간이 4시간 이내인가?",ref:"EU GMP Ch.5 Traceability\n21 CFR 211 Batch Records\nGS1 Standards",crit:"【5점】양방향 + 4시간 이내 + 자동화\n【4점】양방향 + 4시간 이내\n【3점】양방향 + 24시간 이내\n【2점】일방향만\n【1점】추적 불가",meas:"추적 가능 여부 +\n추적 소요시간 측정",top:"양방향+4시간",avg:"24시간"},
+{id:"CMP_15",part:2,area:"CMP",no:15,sub:"위수탁",title:"위수탁 계약 관리",q:"위탁생산(CMO), 위탁시험(CRO)에 대해 Quality Agreement가 100% 체결되어 있고, 연 1회 검토되는가?",ref:"ICH Q10 §2.7 Contract Mfg\nEU GMP Ch.7 Contract\n21 CFR 211.22",crit:"【5점】100% 체결 + 연1회 검토 + Audit\n【4점】100% 체결 + 연1회 검토\n【3점】100% 체결\n【2점】일부 미체결\n【1점】체결 미흡",meas:"QA 체결 건수 ÷\n위수탁 계약 건수 × 100",top:"100%+Audit",avg:"90%"},
+{id:"CMP_16",part:2,area:"CMP",no:16,sub:"위수탁",title:"수탁자 관리",q:"수탁자(CMO/CRO)에 대한 정기 평가(품질/납기/서비스)가 연 1회 이상 수행되고, Audit이 실시되는가?",ref:"ICH Q10 Supplier Audit\nQuality Oversight\n공급업체 관리 SOP",crit:"【5점】연1회 평가 + Audit + 개선\n【4점】연1회 평가 + Audit\n【3점】연1회 평가\n【2점】격년 평가\n【1점】평가 없음",meas:"수탁자 평가 완료 건수\n÷ 전체 수탁자 × 100",top:"100%+Audit",avg:"평가만"},
+{id:"SCM_1",part:2,area:"SCM",no:1,sub:"수요 계획",title:"수요 예측 정확도",q:"수요 예측 정확도(Forecast Accuracy)가 측정되고, MAPE(평균절대백분율오차)가 20% 이내인가?",ref:"SCOR Model Forecast Accuracy\nMAPE Calculation\nS&OP Process",crit:"【5점】MAPE ≤10% + 월별 측정\n【4점】MAPE ≤15%\n【3점】MAPE 16-20%\n【2점】MAPE 21-30%\n【1점】MAPE >30% 또는 미측정",meas:"MAPE = Σ|실제-예측|/실제\n÷ N × 100",top:"MAPE≤10%",avg:"MAPE 25%"},
+{id:"SCM_2",part:2,area:"SCM",no:2,sub:"수요 계획",title:"S&OP 운영",q:"Sales & Operations Planning(S&OP) 프로세스가 월 1회 운영되고, 수요-공급 균형이 관리되는가?",ref:"S&OP Best Practices (APICS)\nIBP (Integrated Business Planning)\nConsensus Demand Planning",crit:"【5점】월1회 + 균형 관리 + 경영진 참여\n【4점】월1회 + 균형 관리\n【3점】월1회\n【2점】분기1회\n【1점】S&OP 없음",meas:"S&OP 회의 주기 +\n수요-공급 균형 여부",top:"월1회+경영진",avg:"분기"},
+{id:"SCM_3",part:2,area:"SCM",no:3,sub:"공급 관리",title:"공급업체 이중화",q:"핵심 원료(API, 핵심 부형제)의 공급업체 이중화(Dual Sourcing)가 100% 되어 있는가?",ref:"Supply Risk Management\nDual Sourcing Strategy\nBCP (Business Continuity)",crit:"【5점】핵심 100% + 일반 50%↑\n【4점】핵심 100%\n【3점】핵심 80-99%\n【2점】핵심 50-79%\n【1점】핵심 <50%",meas:"이중화 완료 핵심 원료 수\n÷ 전체 핵심 원료 × 100",top:"100%+일반",avg:"70%"},
+{id:"SCM_4",part:2,area:"SCM",no:4,sub:"공급 관리",title:"공급업체 OTD",q:"공급업체 납기 준수율(On-Time Delivery)이 95% 이상인가? 미준수 시 CAPA가 요구되는가?",ref:"SCOR Supplier OTD\nSupplier Scorecard\nDelivery Performance",crit:"【5점】OTD ≥98% + CAPA 체계\n【4점】OTD ≥95%\n【3점】OTD 90-94%\n【2점】OTD 85-89%\n【1점】OTD <85%",meas:"기한 내 납품 건수 ÷\n총 발주 건수 × 100",top:"≥98%",avg:"90%"},
+{id:"SCM_5",part:2,area:"SCM",no:5,sub:"공급 관리",title:"공급 리스크 관리",q:"공급망 리스크(공급 중단, 품질 이슈, 지정학적 리스크)가 평가되고, Mitigation Plan이 있는가?",ref:"Supply Chain Risk Management\nISO 28000 Supply Chain Security\nBCP Planning",crit:"【5점】Risk 평가 + Mitigation + BCP\n【4점】Risk 평가 + Mitigation\n【3점】Risk 평가만\n【2점】일부만\n【1점】평가 없음",meas:"공급 리스크 평가 여부 +\nMitigation Plan 존재",top:"평가+BCP",avg:"일부"},
+{id:"SCM_6",part:2,area:"SCM",no:6,sub:"생산/물류",title:"OTIF (완전 적시 납품)",q:"고객에 대한 OTIF(On-Time In-Full) 달성률이 97% 이상인가?",ref:"SCOR Perfect Order\nOTIF Metrics\nCustomer Service Level",crit:"【5점】OTIF ≥99%\n【4점】OTIF ≥97%\n【3점】OTIF 94-96%\n【2점】OTIF 90-93%\n【1점】OTIF <90%",meas:"적시+완전 납품 건수 ÷\n총 주문 건수 × 100",top:"≥99%",avg:"94%"},
+{id:"SCM_7",part:2,area:"SCM",no:7,sub:"생산/물류",title:"재고 일수 (DIO)",q:"원료/자재/완제품 재고일수(Days Inventory Outstanding)가 목표 이내인가?",ref:"SCOR Inventory Days\nWorking Capital Optimization\nInventory Policy",crit:"【5점】원료 ≤20일, 완제 ≤30일\n【4점】원료 ≤30일, 완제 ≤45일\n【3점】원료 ≤45일, 완제 ≤60일\n【2점】원료 ≤60일\n【1점】재고일 >60일",meas:"평균 재고 ÷ 일평균 출고량",top:"원료20/완제30",avg:"원료45"},
+{id:"SCM_8",part:2,area:"SCM",no:8,sub:"생산/물류",title:"물류 비용",q:"물류 비용(입고+보관+출고+운송)이 매출 대비 5% 이내인가? 물류 비용 절감 활동이 있는가?",ref:"SCOR Total Logistics Cost\nTransportation Cost Analysis\n3PL Management",crit:"【5점】물류비 ≤3% + 절감 활동\n【4점】물류비 ≤5%\n【3점】물류비 5.1-7%\n【2점】물류비 7.1-10%\n【1점】물류비 >10%",meas:"물류 비용 ÷ 매출액 × 100",top:"≤3%",avg:"7%"},
+{id:"DIG_1",part:2,area:"DIG",no:1,sub:"MES/ERP",title:"MES 도입률",q:"Manufacturing Execution System(MES)이 핵심 공정에 도입되어 있고, 생산 실적/품질 데이터가 실시간 수집되는가?",ref:"ISA-95 MES Standard\nGAMP 5 MES Validation\nMESA Model 11 Functions",crit:"【5점】MES 100% + 실시간 + 분석\n【4점】MES 80%↑\n【3점】MES 50-79%\n【2점】MES <50%\n【1점】MES 미도입",meas:"MES 적용 공정 수 ÷\n전체 공정 × 100",top:"100%+분석",avg:"50%"},
+{id:"DIG_2",part:2,area:"DIG",no:2,sub:"MES/ERP",title:"ERP 통합",q:"ERP 시스템이 생산/재고/품질/재무와 통합되어 있고, 데이터 일관성이 확보되는가?",ref:"ISA-95 Enterprise Integration\nERP Best Practices\nMaster Data Management",crit:"【5점】통합 100% + 데이터 일관성\n【4점】통합 80%↑\n【3점】통합 60-79%\n【2점】통합 <60%\n【1점】ERP 미도입",meas:"ERP 통합 모듈 수 ÷\n대상 모듈 × 100",top:"100%+일관성",avg:"60%"},
+{id:"DIG_3",part:2,area:"DIG",no:3,sub:"MES/ERP",title:"eBR 도입률",q:"Electronic Batch Record(eBR)가 도입되어 있고, 종이 기록 대비 오류 50%↓, Review 시간 30%↓ 효과가 있는가?",ref:"21 CFR Part 11 Electronic Records\nGAMP 5 Appendix M5 eBR\nISPE eBR Guide",crit:"【5점】eBR ≥90% + 효과 입증\n【4점】eBR ≥70%\n【3점】eBR 40-69%\n【2점】eBR 10-39%\n【1점】eBR <10%",meas:"eBR 적용 제품 수 ÷\n전체 제품 × 100",top:"≥90%+효과",avg:"40%"},
+{id:"DIG_4",part:2,area:"DIG",no:4,sub:"데이터/분석",title:"데이터 자동 수집",q:"생산/품질 데이터가 설비에서 자동으로 수집되는 비율이 80% 이상인가? 수동 입력이 최소화되어 있는가?",ref:"OPC/OPC-UA Data Collection\nSCADA Integration\nData Integrity Automation",crit:"【5점】자동 수집 ≥90% + 실시간\n【4점】자동 수집 ≥80%\n【3점】자동 수집 60-79%\n【2점】자동 수집 40-59%\n【1점】자동 수집 <40%",meas:"자동 수집 데이터 항목 ÷\n전체 데이터 항목 × 100",top:"≥90%",avg:"50%"},
+{id:"DIG_5",part:2,area:"DIG",no:5,sub:"데이터/분석",title:"Analytics Dashboard",q:"Production/Quality Dashboard가 운영되고, KPI가 실시간 또는 일별로 시각화되는가?",ref:"Business Intelligence\nReal-time Analytics\nData Visualization",crit:"【5점】실시간 Dashboard + Alert\n【4점】일별 Dashboard\n【3점】주별 Report\n【2점】월별 Report\n【1점】Dashboard 없음",meas:"Dashboard 업데이트 주기\n+ Alert 기능 여부",top:"실시간+Alert",avg:"주별"},
+{id:"DIG_6",part:2,area:"DIG",no:6,sub:"데이터/분석",title:"Predictive Analytics",q:"예측 분석(품질 예측, 설비 고장 예측)이 적용되어 있는가? Machine Learning/AI가 활용되는가?",ref:"Predictive Quality Analytics\nPredictive Maintenance\nMachine Learning in Pharma",crit:"【5점】예측 분석 + ML 적용 + 효과\n【4점】예측 분석 Pilot\n【3점】Statistical Analysis만\n【2점】검토 중\n【1점】미적용",meas:"예측 분석 적용 여부 +\nML/AI 활용 수준",top:"ML+효과",avg:"검토중"},
+{id:"DIG_7",part:2,area:"DIG",no:7,sub:"보안/인프라",title:"Cyber Security",q:"OT(Operational Technology) 환경의 Cyber Security 정책이 수립되고, 연 1회↑ 취약점 점검이 수행되는가?",ref:"FDA Cybersecurity Guidance\nIEC 62443 Industrial Security\nNIST Cybersecurity Framework",crit:"【5점】정책 + 연2회 점검 + 개선\n【4점】정책 + 연1회 점검\n【3점】정책만\n【2점】정책 미흡\n【1점】정책 없음",meas:"OT Security 정책 유무 +\n점검 주기",top:"정책+연2회",avg:"정책만"},
+{id:"DIG_8",part:2,area:"DIG",no:8,sub:"보안/인프라",title:"데이터 백업/DR",q:"GxP 데이터 백업이 일일 수행되고, 연 1회↑ 복구 테스트(DR Test)가 이루어지는가? RPO/RTO가 정의되어 있는가?",ref:"EU GMP Annex 11 §7.2 Backup\nGAMP 5 Disaster Recovery\nRPO/RTO Definition",crit:"【5점】일일 백업 + DR 연2회 + RPO/RTO\n【4점】일일 백업 + DR 연1회\n【3점】일일 백업만\n【2점】백업 부정기\n【1점】백업 미흡",meas:"백업 주기 + DR Test 주기\n+ RPO/RTO 정의 여부",top:"일일+DR연2회",avg:"일일만"},
+{id:"ENV_1",part:2,area:"ENV",no:1,sub:"에너지 관리",title:"Energy Management System",q:"ISO 50001 또는 동등 수준의 에너지 경영시스템이 구축되어 있는가?",ref:"ISO 50001:2018 EnMS\n에너지이용합리화법\n온실가스 목표관리제",crit:"【5점】ISO 50001 인증 + 운영\n【4점】ISO 50001 인증\n【3점】자체 시스템\n【2점】부분 운영\n【1점】시스템 없음",meas:"ISO 50001 인증 여부 또는\n자체 시스템 수준",top:"인증+운영",avg:"자체"},
+{id:"ENV_2",part:2,area:"ENV",no:2,sub:"에너지 관리",title:"에너지 원단위",q:"에너지 원단위(kWh/Batch 또는 kWh/kg)가 측정되고, 연 3% 개선 목표가 관리되는가?",ref:"ISO 50001 Energy Performance\nEnergy Intensity\nEnPI (Energy Performance Indicator)",crit:"【5점】측정 + 연5%↓ 달성\n【4점】측정 + 연3%↓ 달성\n【3점】측정 + 목표 수립\n【2점】측정만\n【1점】측정 안함",meas:"에너지 사용량 ÷ 생산량\n+ 개선율",top:"연5%↓",avg:"측정만"},
+{id:"ENV_3",part:2,area:"ENV",no:3,sub:"에너지 관리",title:"에너지 절감",q:"에너지 절감 과제(고효율 설비, 운전 최적화, 폐열 회수)가 연 3건↑ 수행되고, 절감 효과가 금액으로 검증되는가?",ref:"Energy Audit (ISO 50002)\n에너지 절약 시설투자\n고효율 에너지기자재",crit:"【5점】연5건↑ + 효과 검증\n【4점】연3건↑ + 효과 검증\n【3점】연3건↑\n【2점】연1-2건\n【1점】과제 없음",meas:"연간 에너지 절감 과제 수\n+ 절감 효과 금액",top:"연5건+검증",avg:"연2건"},
+{id:"ENV_4",part:2,area:"ENV",no:4,sub:"온실가스",title:"GHG 배출량 관리",q:"온실가스(GHG) 배출량(Scope 1, 2)이 연 1회↑ 산정되고, 감축 목표가 수립되어 있는가?",ref:"온실가스 배출권거래법\nGHG Protocol\nISO 14064 GHG Accounting",crit:"【5점】Scope 1,2 산정 + 감축 목표 달성\n【4점】Scope 1,2 산정 + 목표 수립\n【3점】Scope 1,2 산정\n【2점】일부 산정\n【1점】산정 안함",meas:"GHG 배출량 산정 여부 +\n감축 목표 달성률",top:"산정+달성",avg:"산정"},
+{id:"ENV_5",part:2,area:"ENV",no:5,sub:"온실가스",title:"Carbon Neutrality",q:"탄소중립 목표 및 로드맵이 수립되어 있는가? 재생에너지 사용 비율이 확대되고 있는가?",ref:"2050 탄소중립 시나리오\nRE100 (Renewable Energy 100%)\nScience Based Targets (SBTi)",crit:"【5점】목표 + 로드맵 + 재생 20%↑\n【4점】목표 + 로드맵\n【3점】목표 수립\n【2점】검토 중\n【1점】목표 없음",meas:"탄소중립 목표 유무 +\n재생에너지 비율",top:"목표+20%",avg:"검토중"},
+{id:"ENV_6",part:2,area:"ENV",no:6,sub:"용수 관리",title:"용수 사용량 관리",q:"용수 사용량(WFI, PW, 일반용수)이 Batch별/공정별로 측정되고, 용수 원단위가 관리되는가?",ref:"ISO 14046 Water Footprint\nWater Stewardship\nWater Use Efficiency",crit:"【5점】Batch별 측정 + 원단위 연3%↓\n【4점】Batch별 측정\n【3점】공정별 측정\n【2점】공장 전체만\n【1점】측정 안함",meas:"용수 사용량 ÷ 생산량\n+ 측정 단위",top:"Batch+3%↓",avg:"공장전체"},
+{id:"ENV_7",part:2,area:"ENV",no:7,sub:"용수 관리",title:"용수 재이용",q:"용수 재이용(Recycle, Reuse) 비율이 측정되고 확대 계획이 있는가?",ref:"물의 재이용 촉진법\nWater Recycling\nZero Liquid Discharge",crit:"【5점】재이용률 ≥40% + 확대 계획\n【4점】재이용률 ≥30%\n【3점】재이용률 20-29%\n【2점】재이용률 <20%\n【1점】재이용 없음",meas:"재이용 용수량 ÷\n총 용수 사용량 × 100",top:"≥40%",avg:"10%"},
+{id:"ENV_8",part:2,area:"ENV",no:8,sub:"용수 관리",title:"폐기물 관리",q:"폐기물 발생량이 측정되고, 폐기물 원단위 연 3% 감량 목표가 관리되는가? 재활용률이 70% 이상인가?",ref:"폐기물관리법\n자원순환기본법\nZero Waste to Landfill",crit:"【5점】연3%↓ + 재활용 ≥80%\n【4점】연3%↓ + 재활용 ≥70%\n【3점】목표 수립\n【2점】측정만\n【1점】측정 안함",meas:"폐기물 발생량 ÷ 생산량\n+ 재활용률",top:"3%↓+80%",avg:"측정만"}];
+const STORAGE='shouse_pi_all';
+let cfg={adminPw:'admin123',users:{}},user=null,view='home',selPart=0,selArea='';
+
+document.addEventListener('DOMContentLoaded',init);
+
+function init(){load();updUserList();document.getElementById('inpPw').onkeypress=e=>{if(e.key==='Enter')doLogin()}}
+function load(){try{const s=localStorage.getItem(STORAGE);if(s)cfg=JSON.parse(s)}catch(e){}}
+function save(){try{localStorage.setItem(STORAGE,JSON.stringify(cfg))}catch(e){}}
+function updUserList(){const sel=document.getElementById('selUser');sel.innerHTML='<option value="">-- 선택 --</option>'+Object.keys(cfg.users).map(n=>`<option value="${n}">${n}</option>`).join('')}
+
+function doLogin(){
+const name=document.getElementById('selUser').value,pw=document.getElementById('inpPw').value,err=document.getElementById('loginErr');
+if(!name){err.textContent='평가자를 선택하세요';err.classList.remove('hide');return}
+if(!cfg.users[name]){err.textContent='등록되지 않은 평가자';err.classList.remove('hide');return}
+if(cfg.users[name].pw!==pw){err.textContent='비밀번호 오류';err.classList.remove('hide');return}
+user=name;err.classList.add('hide');
+document.getElementById('loginPage').classList.add('hide');
+document.getElementById('app').classList.remove('hide');
+document.getElementById('userName').textContent=user+(cfg.users[user].admin?' (관리자)':'');
+document.getElementById('btnAdmin').style.display=cfg.users[user].admin?'inline-block':'none';
+goHome();
+}
+
+function logout(){user=null;document.getElementById('app').classList.add('hide');document.getElementById('loginPage').classList.remove('hide');document.getElementById('inpPw').value='';updUserList()}
+
+function updProg(){const d=cfg.users[user]?.data||{};const done=ITEMS.filter(i=>d[i.id]?.sc>0).length;document.getElementById('progText').textContent=done+'/222';document.getElementById('progBar').style.width=(done/222*100)+'%'}
+function updBtns(){document.getElementById('btnHome').className=view==='home'?'active':'';document.getElementById('btnDash').className=view==='dash'?'active':'';document.getElementById('btnAdmin').className=view==='admin'?'active':''}
+
+function goHome(){view='home';selPart=0;selArea='';updBtns();render()}
+function goDash(){view='dash';updBtns();render()}
+function goAdmin(){view='admin';updBtns();render()}
+function goPart(p){view='areas';selPart=p;updBtns();render()}
+function goArea(code){view='list';selArea=code;updBtns();render()}
+function goBack(){if(view==='list'){view='areas';selArea='';}else if(view==='areas'){view='home';selPart=0;}updBtns();render()}
+
+function render(){
+const m=document.getElementById('mainContent');
+if(view==='home')m.innerHTML=renderHome();
+else if(view==='areas')m.innerHTML=renderAreas();
+else if(view==='list')m.innerHTML=renderList();
+else if(view==='dash')m.innerHTML=renderDash();
+else if(view==='admin')m.innerHTML=renderAdmin();
+updProg();
+}
+
+function renderHome(){
+const d=cfg.users[user]?.data||{};
+const p1=ITEMS.filter(i=>i.part===1&&d[i.id]?.sc>0).length;
+const p2=ITEMS.filter(i=>i.part===2&&d[i.id]?.sc>0).length;
+return `<div class="home-grid">
+<div class="part-card" onclick="goPart(1)"><h2>📦 Part 1</h2><p>운영관리 영역</p><div class="count">${p1}/107</div><p style="margin-top:8px;color:#64748b">Man, Material, Machine, Method, HR, Tech Transfer</p></div>
+<div class="part-card" onclick="goPart(2)"><h2>📋 Part 2</h2><p>관리지원 영역</p><div class="count">${p2}/115</div><p style="margin-top:8px;color:#64748b">Cost, Finance, SHE, GMP, Compliance, Supply Chain, Digital, Energy</p></div>
+</div>`;
+}
+
+function renderAreas(){
+const d=cfg.users[user]?.data||{};
+const areas=AREAS.filter(a=>a.part===selPart);
+let h=`<button class="back-btn" onclick="goBack()">← 뒤로</button><h2 style="margin-bottom:16px">Part ${selPart} - ${selPart===1?'운영관리':'관리지원'}</h2>`;
+areas.forEach(a=>{
+const items=ITEMS.filter(i=>i.area===a.code);
+const scores=items.map(i=>d[i.id]?.sc||0).filter(s=>s>0);
+const done=scores.length,avg=scores.length?(scores.reduce((x,y)=>x+y,0)/scores.length).toFixed(1):'-';
+const pct=done/items.length*100;
+h+=`<div class="area-card" onclick="goArea('${a.code}')">
+<div class="area-icon" style="background:${a.color}20;color:${a.color}">${a.emoji}</div>
+<div class="area-info"><h3>${a.name}</h3><p>${a.count}개 항목</p></div>
+<div class="area-stats"><div class="score" style="color:${a.color}">${avg}</div><div class="count">${done}/${a.count}</div>
+<div class="area-bar"><div class="area-bar-fill" style="width:${pct}%;background:${a.color}"></div></div></div></div>`;
+});
+return h;
+}
+
+function renderList(){
+const d=cfg.users[user]?.data||{};
+const area=AREAS.find(a=>a.code===selArea);
+const items=ITEMS.filter(i=>i.area===selArea).sort((a,b)=>a.no-b.no);
+const done=items.filter(i=>d[i.id]?.sc>0).length;
+let h=`<button class="back-btn" onclick="goBack()">← 뒤로</button>
+<div class="section-header"><div><span style="font-size:1.5rem;margin-right:8px">${area.emoji}</span><strong>${area.name}</strong></div><span>${done}/${items.length} 완료</span></div>`;
+items.forEach(i=>{
+const sc=d[i.id]?.sc||0,memo=d[i.id]?.memo||'';
+h+=`<div class="item-card ${sc>0?'s'+sc:''}" id="card-${i.id}">
+<div class="item-header" onclick="toggleItem('${i.id}')">
+<div><span class="item-no">${i.no}</span><span class="item-title">${i.title}</span><span class="item-sub">${i.sub}</span></div>
+<span class="badge ${sc>0?'filled':'empty'}" id="badge-${i.id}">${sc>0?sc+'점':'미평가'}</span></div>
+<div class="item-body">
+<div class="detail-grid">
+<div class="detail-box"><h4>📋 점검 질문</h4><p>${i.q}</p></div>
+<div class="detail-box crit"><h4>📊 평가 기준</h4><p>${i.crit}</p></div>
+<div class="detail-box"><h4>📖 관련 기준</h4><p>${i.ref}</p></div>
+<div class="detail-box"><h4>📏 측정 방법</h4><p>${i.meas}</p></div>
+</div>
+<div class="bench-row">
+<div class="bench-box top"><div class="bench-label">🏆 탑티어</div><div class="bench-value" style="color:#16a34a">${i.top}</div></div>
+<div class="bench-box avg"><div class="bench-label">📊 업계평균</div><div class="bench-value" style="color:#ea580c">${i.avg}</div></div>
+</div>
+<div class="score-section"><h4>✏️ 점수 선택</h4>
+<div class="score-btns">${[1,2,3,4,5].map(s=>`<button class="score-btn s${s} ${sc===s?'sel':''}" onclick="setScore('${i.id}',${s})">${s}</button>`).join('')}</div>
+<textarea class="memo" id="memo-${i.id}" placeholder="메모" onchange="setMemo('${i.id}',this.value)">${memo}</textarea>
+</div></div></div>`;
+});
+return h;
+}
+
+function renderDash(){
+const d=cfg.users[user]?.data||{};
+const scores=ITEMS.map(i=>d[i.id]?.sc||0).filter(s=>s>0);
+const done=scores.length,avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2):'-',low=scores.filter(s=>s<=2).length;
+let bars='';
+AREAS.forEach(a=>{
+const items=ITEMS.filter(i=>i.area===a.code);
+const sc=items.map(i=>d[i.id]?.sc||0).filter(s=>s>0);
+const aavg=sc.length?(sc.reduce((x,y)=>x+y,0)/sc.length).toFixed(1):0;
+const pct=aavg?parseFloat(aavg)/5*100:0;
+bars+=`<div class="bar-row"><div class="bar-label">${a.emoji} ${a.name.split('(')[0]}</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${a.color}">${aavg||''}</div></div><div class="bar-count">${sc.length}/${a.count}</div></div>`;
+});
+return `<div class="stats-grid">
+<div class="stat-card"><div class="stat-value blue">${avg}</div><div class="stat-label">평균 점수</div></div>
+<div class="stat-card"><div class="stat-value green">${done}</div><div class="stat-label">완료 / 222</div></div>
+<div class="stat-card"><div class="stat-value orange">${low}</div><div class="stat-label">미흡 (≤2점)</div></div>
+</div><div class="chart-card"><div class="chart-title">📊 영역별 현황</div>${bars}</div>`;
+}
+
+function renderAdmin(){
+if(!cfg.users[user]?.admin)return '<p>관리자 권한이 필요합니다.</p>';
+const list=Object.keys(cfg.users).map(n=>{
+const d=cfg.users[n].data||{};
+const done=ITEMS.filter(i=>d[i.id]?.sc>0).length;
+return `<div class="eval-item"><div><span class="eval-name">${n}</span>${cfg.users[n].admin?' 👑':''}</div><div class="eval-info">${done}/222 완료 <button class="btn btn-red" style="width:auto;padding:6px 12px;margin-left:8px" onclick="delUser('${n}')">삭제</button></div></div>`;
+}).join('');
+return `<div class="admin-card"><h3>➕ 평가자 등록</h3>
+<div class="form-row"><input id="newName" placeholder="이름"><input id="newPw" placeholder="비밀번호" type="password"><button class="btn btn-blue" style="width:auto" onclick="addUser()">등록</button></div></div>
+<div class="admin-card"><h3>👥 평가자 목록 (${Object.keys(cfg.users).length}명)</h3><div class="eval-list">${list||'등록된 평가자가 없습니다'}</div></div>
+<div class="admin-card"><h3>💾 데이터 관리</h3>
+<button class="btn btn-green" style="width:auto;margin-right:8px" onclick="exportData()">📥 JSON 내보내기</button>
+<button class="btn btn-gray" style="width:auto;margin-right:8px" onclick="document.getElementById('impFile').click()">📤 불러오기</button>
+<input type="file" id="impFile" accept=".json" style="display:none" onchange="importData(event)">
+<button class="btn btn-red" style="width:auto" onclick="resetData()">🗑️ 초기화</button></div>`;
+}
+
+function toggleItem(id){document.getElementById('card-'+id).classList.toggle('open')}
+function setScore(id,sc){
+if(!cfg.users[user].data)cfg.users[user].data={};
+if(!cfg.users[user].data[id])cfg.users[user].data[id]={};
+cfg.users[user].data[id].sc=sc;
+const card=document.getElementById('card-'+id);
+card.className='item-card open s'+sc;
+card.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('sel'));
+card.querySelector('.score-btn.s'+sc).classList.add('sel');
+document.getElementById('badge-'+id).textContent=sc+'점';
+document.getElementById('badge-'+id).className='badge filled';
+save();updProg();
+}
+function setMemo(id,memo){
+if(!cfg.users[user].data)cfg.users[user].data={};
+if(!cfg.users[user].data[id])cfg.users[user].data[id]={};
+cfg.users[user].data[id].memo=memo;save();
+}
+
+function addUser(){
+const name=document.getElementById('newName').value.trim(),pw=document.getElementById('newPw').value;
+if(!name||!pw){alert('이름과 비밀번호를 입력하세요');return}
+if(cfg.users[name]){alert('이미 존재하는 평가자');return}
+cfg.users[name]={pw,admin:false,data:{}};save();
+document.getElementById('newName').value='';document.getElementById('newPw').value='';
+render();alert(name+' 등록 완료');
+}
+function delUser(name){
+if(name===user){alert('자신은 삭제할 수 없습니다');return}
+if(!confirm(name+' 평가자를 삭제하시겠습니까?'))return;
+delete cfg.users[name];save();render();
+}
+function exportData(){
+const blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+a.download='PI_Backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importData(e){
+const file=e.target.files[0];if(!file)return;
+const reader=new FileReader();
+reader.onload=ev=>{try{cfg=JSON.parse(ev.target.result);save();render();updUserList();alert('불러오기 완료')}catch(err){alert('파일 오류')}};
+reader.readAsText(file);e.target.value='';
+}
+function resetData(){
+if(!confirm('모든 데이터를 초기화하시겠습니까?'))return;
+if(!confirm('정말로 삭제하시겠습니까? 복구 불가!'))return;
+cfg={adminPw:'admin123',users:{}};save();logout();
+}
+
+// 초기 관리자 계정 생성
+if(!cfg.users['관리자']){cfg.users['관리자']={pw:'admin123',admin:true,data:{}};save();updUserList()}
+</script>
+</body>
+</html>
